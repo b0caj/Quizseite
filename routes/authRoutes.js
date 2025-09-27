@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router(); // Router-Instanz
 const bcrypt = require('bcryptjs');
 const jsonwebtoken = require('jsonwebtoken');
-const Player = require('../models/Player'); // Import des Player-Modells
+const Player = require('../models/PLayer'); // Import des Player-Modells
 
 // Route: POST /api/register
 router.post('/register', async (req, res) => {
