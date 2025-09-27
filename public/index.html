@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Buzzer - Spieler</title>
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body class="player-body">
+    <header class="player-header">
+        <h1>Buzzerraum</h1>
+    </header>
+    
+    <main class="content-container">
+        
+        <section id="auth-section" class="auth-section">
+            <div id="login-form" class="auth-card">
+                <h2>Buzzerraum Login</h2>
+                <input type="text" id="username" placeholder="Benutzername" class="input-field neon-border"><br>
+                <input type="password" id="password" placeholder="Passwort" class="input-field neon-border"><br>
+                <button onclick="handleLogin()" class="button primary glow">Login</button>
+                <p id="login-status" class="status-message"></p>
+            </div>
+
+            <div id="register-area" class="auth-card register-card">
+                <h3>Noch kein Konto?</h3>
+                <input type="text" id="reg-username" placeholder="Neuer Benutzername" class="input-field neon-border"><br>
+                <input type="password" id="reg-password" placeholder="Passwort" class="input-field neon-border"><br>
+                <button onclick="handleRegister()" class="button secondary-accent glow">Registrieren</button>
+                <p id="register-status" class="status-message"></p>
+            </div>
+        </section>
+
+        <section id="buzzer-area" class="buzzer-section" style="display:none;">
+            
+            <div class="game-top-bar">
+                <h2 id="welcome-message">Willkommen! </h2>
+                <div class="top-controls">
+                    <a href="/stats.html" class="button info small-button">Zur Ewigen Bestenliste</a>
+                    <button onclick="logout()" class="button danger small-button">Logout</button>
+                </div>
+            </div>
+            
+            <div class="player-game-layout">
+
+                <div class="buzzer-area-left">
+                    <div class="buzzer-container">
+                        <button id="buzzer-button" onclick="buzz()" class="buzzer-button neon-shadow">BUZZ!</button>
+                        <p id="buzzer-status" class="status-message huge-status">Warte auf die nächste Frage...</p>
+                    </div>
+
+                    <div class="answer-submission-area">
+                        <input type="text" id="answer-input" placeholder="Deine Antwort..." class="input-field neon-border">
+                        <button onclick="submitAnswer()" class="button success small-button">Antwort senden</button>
+                    </div>
+                </div>
+
+                <div class="card score-card player-score-card">
+                    <h2 class="card-title">Aktueller Punktestand</h2>
+                    <div class="styled-table-wrapper scrollable-content">
+                        <table id="current-scores" class="styled-table">
+                        <thead>
+                            <tr>
+                                <th class="player-name-col">Spieler</th>
+                                <th class="score-column">Punkte</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script> 
+    <script src="/js/index.js"></script> 
+</body>
+</html>

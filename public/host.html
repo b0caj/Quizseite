@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Host Dashboard | Buzzerraum</title>
+    <link rel="stylesheet" href="style.css"> 
+    
+</head>
+<body class="host-body">
+    <header class="header neon-header">
+        <h1>HOST-ZENTRALE <span style="color: var(--primary-color);"></span></h1>
+        <div id="auth-controls">
+            <span id="welcome-host" style="margin-right: 15px;"></span>
+            <a href="/stats.html" class="button secondary small-button">Zur Bestenliste</a>
+            <button onclick="logout()" class="button danger small-button">Host-Logout</button>
+        </div>
+    </header>
+
+    <div id="login-form" class="login-container auth-card">
+        <input type="text" id="username" placeholder="Host-Name" class="input-field neon-border"><br>
+        <input type="password" id="password" placeholder="Passwort" class="input-field neon-border"><br>
+        <button onclick="handleLogin()" class="button primary glow">Host-Login</button>
+        <p id="login-status" class="status-message"></p>
+    </div>
+
+    <main id="host-area" class="host-container three-column-grid" style="display:none;">
+
+        <div class="card logs-card">
+            <h2 class="card-title">Live-Aktivität (Logs)</h2>
+
+            <div class="controls-group typing-log-group">
+                <h3 class="group-title">Live-Eingaben <span style="color: var(--info-color);"></span></h3>
+                <div id="live-typing-updates" class="log-area live-typing-log scrollable-content"></div>
+            </div>
+
+            <details class="accordion answer-accordion" open>
+                <summary class="accordion-header">Eingegangene Antworten (Gesendet) ↓</summary>
+                <div class="accordion-content log-area small-log-area answers-log scrollable-content">
+                    <ul id="answers-list" class="log-list"></ul>
+                </div>
+            </details>
+        </div>
+        
+        <div class="card central-control-card">
+            
+            <h2 class="card-title neon-text">Quiz & Fragen Steuerung</h2>
+            <div id="quiz-selection-area" class="controls-group">
+                <select id="quizSelect" class="input-field select-field neon-border">
+                    <option value="">-- Wähle ein Quiz --</option>
+                </select>
+                <div class="button-group">
+                    <button onclick="startQuiz()" id="startButton" disabled class="button primary large-button glow">Quiz starten</button>
+                    <button onclick="loadQuizzes()" class="button secondary-accent small-button">Neu laden</button>
+                </div>
+            </div>
+            
+            <hr class="neon-divider">
+            
+            <div id="question-area" class="controls-group question-display-area" style="display: none;">
+                <p class="question-index" id="current-question-index"></p>
+                <p id="question-display" class="question-text big-text">Lädt Frage...</p>
+                
+                <div class="answer-display-area">
+                    <p id="answer-display" class="answer-text">Antwort: [Wird bei Klick angezeigt]</p>
+                </div>
+                
+                <div class="button-group large-button-group">
+                    <button onclick="showAnswer()" id="showAnswerButton" class="button info action-button">Antwort anzeigen</button>
+                    <button onclick="nextQuestion()" id="nextQuestionButton" disabled class="button success action-button">Nächste Frage »</button>
+                </div>
+            </div>
+            
+            <hr class="neon-divider">
+
+            <h2 class="card-title neon-text">Buzzer & Punkte</h2>
+            <div id="buzzer-status-area" class="controls-group buzzer-controls-group">
+                <p id="buzzer-status" class="status-message huge-status">BUZZER IST FREI.</p>
+                
+                <div class="buzz-details-area">
+                    <p class="detail-label">Gebuzzert von:</p>
+                    <p id="buzzer-winner" class="detail-value winner-placeholder neon-text-highlight">---</p>
+                    <p id="buzz-details" class="status-message small">Warte auf den ersten Buzzer...</p>
+                </div>
+
+                <div id="answer-controls" class="controls-group score-controls" style="display: none;">
+                    <div class="button-group full-width">
+                        <button onclick="scorePlayer('correct')" class="button action success large-action glow">KORREKT</button>
+                        <button onclick="scorePlayer('incorrect')" class="button action danger large-action glow">FALSCH</button>
+                    </div>
+                    <p class="info-text">*(Beide Aktionen setzen den Buzzer zurück)*</p>
+                </div>
+                
+                <hr class="neon-divider">
+                <div class="button-group full-width top-margin-button">
+                    <button onclick="resetBuzzer()" class="button primary full-width">BUZZER FREIGEBEN / RESET</button>
+                    <button onclick="lockBuzzer()" class="button secondary-accent full-width">BUZZER SPERREN</button>
+                </div>
+            </div>
+            
+        </div>
+
+        <div class="right-column-container">
+            
+            <div class="card score-card">
+                <h2 class="card-title">Aktueller Punktestand</h2>
+                <div class="styled-table-wrapper scrollable-content"> 
+                    <table id="current-scores" class="styled-table">
+                        <thead>
+                            <tr>
+                                <th class="player-name-col">Spieler</th>
+                                <th class="score-column">Punkte</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+                <hr class="neon-divider">
+                <div id="manual-adjustment" class="controls-group">
+                    <h3>Manuelle Anpassung</h3>
+                        <select id="adj-player-select" class="input-field select-field neon-border">
+                            <option value="" disabled selected>Wähle Spieler</option>
+                        </select>
+                        <input type="number" id="adj-amount" placeholder="Betrag (+/-)" class="input-field small-input neon-border">
+                        <button onclick="triggerScoreAdjustment()" class="button primary small">Anpassen</button>
+                </div>
+            </div>
+            
+            <div class="card settings-card">
+                <details class="accordion" open>
+                    <summary class="accordion-header">
+                        <h2 class="card-title">Einstellungen & Ende <span style="color: var(--secondary-accent);"></span></h2>
+                    </summary>
+                    <div class="accordion-content">
+                        
+                        <div id="quiz-upload-area" class="controls-group">
+                            <h3>Quiz Datei-Upload</h3>
+                            <input type="file" id="quizFileInput" accept=".json" class="file-input">
+                            <button onclick="uploadQuiz()" class="button small primary">Quiz speichern</button>
+                            <p id="upload-status" class="status-message"></p>
+                        </div>
+
+                        <hr class="neon-divider">
+                        
+                        <div class="controls-group">
+                            <h3>Punkte-Regeln</h3>
+                            <div class="setting-row">
+                                <label for="correctPoints">Korrekte Antwort:</label>
+                                <input type="number" id="correctPoints" value="1" min="0" class="input-field small-input neon-border">
+                            </div>
+                            <div class="setting-row">
+                                <label for="incorrectPoints">Falsche Antwort:</label>
+                                <input type="number" id="incorrectPoints" value="0" min="-10" class="input-field small-input neon-border">
+                            </div>
+                        </div>
+                        
+                        <hr class="neon-divider">
+
+                        <button onclick="endGame()" class="button action danger full-width end-game-button glow">
+                        SPIEL BEENDEN & STATISTIK SPEICHERN
+                        </button>
+                        <p id="game-status" class="status-message"></p>
+                    </div>
+                </details>
+            </div>
+        </div>
+        
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script> 
+    <script src="/js/host.js"></script> 
+</body>
+</html>
