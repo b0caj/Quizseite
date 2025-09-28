@@ -1,0 +1,204 @@
+/* Globale Variablen (für style.css) */
+:root {
+    /* --- Allgemeine Dark Mode Farben (Sehr Schlicht) --- */
+    --background-color: #181818; /* Etwas weicherer dunkler Hintergrund */
+    --card-background: #282828; /* Dunklere Karten für besseren Kontrast */
+    --text-color: #EDEDED; /* Helles Weiß */
+    --secondary-text-color: #AAAAAA; /* Gedämpfter Sekundärtext */
+    
+    /* --- Akzentfarben (Monochromatisch: Nur Blau) --- */
+    /* Dieses Blau wird nun für Primary, Secondary-Accent, Info, etc. genutzt. */
+    --primary-color: #7539b4; /* Professionelles Blau (Hauptakzent) */
+    --secondary-accent: #7b00ff; /* Sekundärakzent ist GLEICH wie Primary */
+    --info-color: #663897; /* Info/Logs ist GLEICH wie Primary */
+
+    /* --- Statusfarben (Funktionale Unterscheidung) --- */
+    --success-color: #388E3C; /* Dunkleres, schlichteres Grün (Erfolg) */
+    --danger-color: #C62828; /* Dunkleres, schlichteres Rot (Gefahr) */
+    
+    /* --- Effekte & Design --- */
+    --shadow: 0 4px 10px rgba(0, 0, 0, 0.8); /* Dezenter Schatten */
+    --neon-glow-primary: none; 
+    --neon-glow-accent: none; 
+    --border-radius: 8px;
+}
+
+/* -----------------------------------
+ * GLOBALE NEON-EFFEKTE ENTFERNEN
+ * ----------------------------------- */
+
+/* Entfernt den Neon-Glow von Buttons */
+.neon-border, .glow {
+    box-shadow: none !important; /* Wichtig: Überschreibt alle vorhandenen Glows */
+    border: 1px solid var(--primary-color); /* Ersetzt Glow durch eine saubere, dünne Linie */
+}
+
+/* Entfernt den Glow vom Header */
+.neon-header {
+    /* box-shadow: var(--neon-glow-primary); würde entfernt */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Schlichter, dezenter Schatten */
+    border-bottom: 3px solid var(--primary-color); /* Saubere Trennlinie */
+}
+
+/* Entfernt Glow von der Divider-Linie */
+.neon-divider {
+    /* box-shadow: var(--neon-glow-accent); würde entfernt */
+    box-shadow: none; 
+    background-color: var(--secondary-text-color); /* Weniger auffällige Farbe */
+}
+
+/* Reduziert die Helligkeit des Headers-Textes */
+.header h1 {
+    text-shadow: none; 
+}
+
+/* -----------------------------------
+ * GRUNDSTYLING & TYPOGRAFIE
+ * ----------------------------------- */
+body {
+    font-family: 'Roboto', 'Arial', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+h1, h2, h3 {
+    color: var(--text-color);
+    margin-top: 0;
+    font-weight: 700;
+}
+
+h2.card-title {
+    border-bottom: 2px solid var(--secondary-accent);
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+.neon-divider {
+    border: 0;
+    height: 1px;
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0), var(--primary-color), rgba(255, 255, 255, 0));
+    margin: 20px 0;
+}
+
+.content-container {
+    padding: 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.header {
+    background-color: #1e1e1e;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+}
+
+.neon-header {
+    border-bottom: 3px solid var(--primary-color);
+}
+
+.card {
+    background-color: var(--card-background);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    height: fit-content; 
+    border: 1px solid #333;
+    transition: transform 0.3s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow), var(--neon-glow-primary);
+}
+
+.input-field {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #555;
+    border-radius: 4px;
+    background-color: #2a2a2a;
+    color: var(--text-color);
+    box-sizing: border-box;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 5px var(--primary-color);
+}
+
+.neon-border {
+    border: 1px solid var(--primary-color);
+}
+
+.button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.1s, box-shadow 0.3s;
+    text-decoration: none;
+    display: inline-block;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.button.primary {
+    background-color: var(--primary-color);
+    color: var(--background-color); 
+}
+
+.button.secondary {
+    background-color: var(--secondary-text-color); 
+    color: var(--background-color);
+}
+.button.secondary-accent {
+    background-color: var(--secondary-accent);
+    color: var(--background-color);
+}
+.button.success { background-color: var(--success-color); color: var(--background-color); }
+.button.danger { background-color: var(--danger-color); color: var(--background-color); }
+.button.info { background-color: var(--info-color); color: var(--background-color); }
+
+.button.glow:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: var(--neon-glow-primary);
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+/* NEU: Container für Willkommen und Logout-Buttons */
+.game-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+    padding: 0 10px;
+}
+
+#welcome-message {
+    margin: 0;
+    font-size: 1.5em; /* Macht die Willkommensnachricht etwas kleiner */
+    color: var(--primary-color);
+}

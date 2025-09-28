@@ -1,5 +1,7 @@
 let token = localStorage.getItem('token');
-        let socket;
+let socket;
+let playerTimerInterval = null;
+let playerTimerSeconds = 0;
         
         async function handleLogin() {
             const username = document.getElementById('username').value;
@@ -78,6 +80,48 @@ let token = localStorage.getItem('token');
     }
 }
 
+    function startPlayerTimer(duration, username) {
+    playerTimerSeconds = duration;
+    const displayContainer = document.getElementById('player-timer-display');
+    const countdownEl = document.getElementById('player-countdown');
+    const infoEl = document.getElementById('player-timer-info');
+
+    displayContainer.style.display = 'block';
+    infoEl.textContent = `${username} muss nun antworten...`;
+    countdownEl.textContent = `${playerTimerSeconds}s`;
+
+    // Deaktiviere den Buzzer (falls er durch einen anderen Spieler gebuzzert wurde)
+    document.getElementById('buzzer-button').disabled = true;
+
+    if (playerTimerInterval) {
+        clearInterval(playerTimerInterval);
+    }
+
+    playerTimerInterval = setInterval(() => {
+        playerTimerSeconds--;
+        countdownEl.textContent = `${playerTimerSeconds}s`;
+
+        if (playerTimerSeconds <= 0) {
+            clearInterval(playerTimerInterval);
+            playerTimerInterval = null;
+            countdownEl.textContent = 'Zeit abgelaufen!';
+            // ... (Hier könnten Sie Aktionen hinzufügen, z.B. dem Spieler ein Feedback geben)
+        }
+    }, 1000);
+}
+
+function stopPlayerTimer() {
+    if (playerTimerInterval) {
+        clearInterval(playerTimerInterval);
+        playerTimerInterval = null;
+    }
+    document.getElementById('player-timer-display').style.display = 'none';
+    document.getElementById('player-countdown').textContent = '';
+    document.getElementById('player-timer-info').textContent = '';
+
+    // Buzzer sollte beim Buzzer-Reset vom Host wieder aktiviert werden
+}
+
         function connectSocket() {
             if (!token) {
                 document.getElementById('login-status').textContent = 'Fehler: Kein Token vorhanden.';
@@ -133,6 +177,12 @@ socket.on('gameEnded', () => {
             }
         });
 
+            // NEU: Timer-Start-Signal vom Server empfangen
+            socket.on('timerStarted', (data) => {
+            startPlayerTimer(data.duration, data.username);
+            });
+
+
             // NEU: Spieler hört, wenn eine korrekte Antwort gewertet wird
             socket.on('correctAnswer', (data) => { 
                 console.log(`✅ KORREKT gewertet! Punkte: ${data.points}`);
@@ -148,6 +198,17 @@ socket.on('gameEnded', () => {
             // 2. NEU: Empfängt den aktualisierten Punktestand nach jeder Punktevergabe
             socket.on('currentScoreUpdate', (scores) => {
                 updateScoreboard(scores);
+            });
+
+            // NEU: Spieler hört, bei welcher Frage der Host ist
+            socket.on('currentQuestionStatus', (data) => {
+            const displayEl = document.getElementById('question-status-display');
+            if (data.current > 0) {
+            displayEl.textContent = `Frage ${data.current} von ${data.total} läuft.`;
+                } else {
+            // Fall, wenn das Quiz beendet wird (current: 0)
+            displayEl.textContent = 'Quiz beendet oder noch nicht gestartet.';
+                }
             });
             
             // Server sendet den aktuellen Zustand
@@ -169,6 +230,7 @@ socket.on('gameEnded', () => {
             socket.on('resetQuestion', () => {
                 updateBuzzerStatus('Warte auf die nächste Frage...');
                 document.getElementById('buzzer-button').disabled = false;
+                stopPlayerTimer();
             });
 
             function updateBuzzerStatus(text) {
@@ -189,10 +251,32 @@ socket.on('gameEnded', () => {
             if (socket && answerText) {
                 socket.emit('submitAnswer', { text: answerText });
                 document.getElementById('answer-input').value = '';
-                alert('Antwort gesendet!');
+                
             }
         }
             // public/index.html (Innerhalb des <script> Tags)
+
+        // NEUE FUNKTION: Wird ausgelöst, wenn der Spieler auf "Frage skippen" klickt
+function requestSkip() {
+    if (socket && socket.connected) {
+        // Sende das Event an den Server, das an den Host weitergeleitet wird
+        socket.emit('requestSkipQuestion');
+        
+        // VISUELLES FEEDBACK: Deaktiviere den Button kurzzeitig
+        const skipButton = document.getElementById('skip-button');
+        skipButton.disabled = true;
+        skipButton.textContent = 'Skip angefragt!';
+        
+        // Re-aktiviere den Button nach 15 Sekunden (damit er nicht für immer blockiert ist)
+        setTimeout(() => {
+            skipButton.disabled = false;
+            skipButton.textContent = 'Frage skippen 🔁';
+        }, 15000); // 15 Sekunden Sperre pro Spieler, um Spam zu verhindern
+        
+    } else {
+        alert("Fehler: Verbindung zum Server getrennt.");
+    }
+}
 
 // NEUE LOGOUT-FUNKTION
 function logout() {

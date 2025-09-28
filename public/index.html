@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Buzzer - Spieler</title>
-    <link rel="stylesheet" href="style.css"> 
+    <link rel="stylesheet" href="/css/style.css"> 
+    <link rel="stylesheet" href="/css/index.css">
 </head>
 <body class="player-body">
     <header class="player-header">
@@ -45,13 +46,19 @@
 
                 <div class="buzzer-area-left">
                     <div class="buzzer-container">
+                          <p id="question-status-display" class="status-message small" style="margin-bottom: 5px;">
+                        Warte auf Quiz-Start...</p> 
                         <button id="buzzer-button" onclick="buzz()" class="buzzer-button neon-shadow">BUZZ!</button>
                         <p id="buzzer-status" class="status-message huge-status">Warte auf die nächste Frage...</p>
+                        <div id="player-timer-display" style="display: none; margin-bottom: 10px;">
+                        <h2 id="player-countdown" class="neon-text-danger" style="margin: 0;"></h2>
+                        <p id="player-timer-info" class="status-message small"></p></div>
                     </div>
 
                     <div class="answer-submission-area">
                         <input type="text" id="answer-input" placeholder="Deine Antwort..." class="input-field neon-border">
                         <button onclick="submitAnswer()" class="button success small-button">Antwort senden</button>
+                        <button id="skip-button" onclick="requestSkip()" class="button secondary small-button" >Frage skippen 🔁</button>
                     </div>
                 </div>
 

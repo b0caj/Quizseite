@@ -1,0 +1,198 @@
+.auth-section {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 10px 0 20px 0;
+}
+
+.auth-card {
+    background-color: var(--card-background);
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    max-width: 350px;
+    flex-grow: 1;
+    text-align: center;
+    border: 1px solid #333;
+}
+
+.register-card {
+    border-left: 3px solid var(--secondary-accent);
+}
+
+.player-header {
+    text-align: center;
+    padding: 10x 20px;
+    background: linear-gradient(135deg, #181818, #0a0a0a);
+    border-bottom: 3px solid var(--secondary-accent);
+}
+
+.buzzer-section {
+    max-width: 1000px; 
+    /* Reduziert den oberen Abstand. Erlaubt dem Spieler-Layout, seinen eigenen Abstand zu definieren. */
+    margin: 0 auto; 
+    padding: 20px; /* Reduziert den vertikalen Innenabstand */
+    flex-grow: 1;
+}
+
+.top-controls {
+    display: flex;
+    justify-content: right;
+    gap: 15px;
+    margin-bottom: 5px;
+}
+
+.buzzer-container {
+    margin: 50px auto;
+    max-width: 400px;
+}
+
+.buzzer-button {
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    font-size: 3em;
+    font-weight: 900;
+    cursor: pointer;
+    border: 8px solid var(--primary-color);
+    transition: transform 0.1s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.buzzer-button:not(:disabled):hover {
+    background-color: #a36cfc;
+    box-shadow: var(--neon-glow-primary);
+}
+
+.buzzer-button:not(:disabled):active {
+    transform: scale(0.95);
+    box-shadow: 0 0 5px var(--primary-color);
+}
+
+.buzzer-button:disabled {
+    background-color: #333;
+    color: #888;
+    border-color: #555;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.answer-submission-area {
+    display: flex;
+    gap: 10px;
+    max-width: 600px;
+    margin: 20px auto 40px;
+}
+
+.status-message.huge-status {
+    font-size: 1.3em;
+    font-weight: 400;
+    margin-top: 10px;
+    color: var(--info-color); 
+}
+
+.player-game-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* Buzzer-Spalte ist doppelt so breit */
+    gap: 30px;
+    max-width: 1000px; /* Begrenzt die maximale Breite des Spiel-Layouts */
+    margin: 40px auto 0 auto;
+    align-items: start; /* Richtet die Inhalte am oberen Rand aus */
+}
+
+/* Wrapper für Buzzer und Eingabe */
+.buzzer-area-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Zentriert Buzzer und Antwort-Eingabe */
+}
+
+/* Entfernt die alte Zentrierung, da der Buzzer jetzt im Flex-Container ist */
+.buzzer-container {
+    margin: 0; 
+    max-width: none; 
+}
+
+/* Sorgt dafür, dass die Antwort-Eingabe die volle Spaltenbreite nutzt */
+.answer-submission-area {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%; 
+    max-width: 600px;
+}
+
+/* NEU: Score Card zur Flex-Struktur anpassen */
+.card.score-card {
+    flex-grow: 0; /* Setzt flex-grow explizit auf 0 */
+    height: fit-content; /* Passt die Höhe an den Inhalt an */
+    display: flex;
+    flex-direction: column;
+    min-height: 200px; 
+}
+
+.styled-table-wrapper {
+    overflow-x: auto;
+    /* flex-grow: 1; ENTFERNT: Der Wrapper soll nicht mehr den gesamten Restplatz im Card einnehmen */
+    flex-grow: 0;
+    
+    /* NEU: Ermöglicht internes Scrollen bei langer Spielerliste */
+    max-height: 450px; /* Setzt eine maximale Höhe von 450px (kann angepasst werden) */
+    overflow-y: auto;
+    padding-right: 5px; 
+}
+
+.styled-table {
+    width: 100%;
+    border-collapse: separate; 
+    border-spacing: 0 5px; 
+}
+
+.styled-table thead th {
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    padding: 12px 10px;
+    text-align: left;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.styled-table thead th:first-child { border-top-left-radius: 4px; }
+.styled-table thead th:last-child { border-top-right-radius: 4px; }
+
+.styled-table tbody td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #222;
+    background-color: #252525;
+}
+
+.styled-table tbody tr:hover td {
+    background-color: #303030;
+}
+
+.score-column {
+    text-align: right;
+    font-weight: bold;
+    color: var(--secondary-accent); 
+}
+
+.player-name-col {
+    font-weight: 300;
+}
+
+/* Responsives Design: Auf kleinen Bildschirmen wieder untereinander */
+@media (max-width: 850px) {
+    .player-game-layout {
+        grid-template-columns: 1fr; /* Zurück zu einer Spalte */
+        gap: 20px;
+    }
+    /* Buzzer oben, Scoreboard unten auf Mobile */
+    .player-score-card {
+        order: 2;
+    }
+    .buzzer-area-left {
+        order: 1;
+    }
+}
+
+

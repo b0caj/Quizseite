@@ -1,0 +1,24 @@
+
+/* Bestenliste (stats.html) spezifische Anpassungen */
+.stats-header-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 0 0 20px;
+}
+
+.leaderboard-card {
+    margin-top: 20px;
+}
+
+.leaderboard-table thead th {
+    background-color: var(--secondary-accent);
+    color: var(--background-color);
+}
+.leaderboard-table tbody td {
+    color: var(--text-color);
+}
+.leaderboard-table .rank {
+    font-weight: 900;
+    color: var(--primary-color);
+}
