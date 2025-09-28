@@ -189,7 +189,6 @@ socket.on('gameEnded', () => {
             if (socket && answerText) {
                 socket.emit('submitAnswer', { text: answerText });
                 document.getElementById('answer-input').value = '';
-                alert('Antwort gesendet!');
             }
         }
             // public/index.html (Innerhalb des <script> Tags)
