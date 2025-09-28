@@ -28,10 +28,10 @@
 }
 
 .buzzer-section {
-    max-width: 1000px; 
-    /* Reduziert den oberen Abstand. Erlaubt dem Spieler-Layout, seinen eigenen Abstand zu definieren. */
-    margin: 0 auto; 
-    padding: 20px; /* Reduziert den vertikalen Innenabstand */
+    max-width: 1400px;
+    /* Erhöhe die maximale Breite, um Platz für 3 Spalten zu schaffen */
+    margin: 0 auto;
+    padding: 20px;
     flex-grow: 1;
 }
 
@@ -42,9 +42,15 @@
     margin-bottom: 5px;
 }
 
+/* Entfernt die alte Zentrierung im .buzzer-container, da der Buzzer jetzt im Flex-Container ist */
 .buzzer-container {
-    margin: 50px auto;
-    max-width: 400px;
+    margin: 0;
+    max-width: none;
+    display: flex;
+    /* NEU: Macht den Container selbst zum Flex-Container */
+    flex-direction: column;
+    align-items: center;
+    /* Zentriert den Buzzer und den Status im Container */
 }
 
 .buzzer-button {
@@ -78,74 +84,84 @@
     box-shadow: none;
 }
 
+/* Stellt sicher, dass die Antwort-Eingabe die volle Spaltenbreite nutzt und zentriert ist */
 .answer-submission-area {
-    display: flex;
-    gap: 10px;
-    max-width: 600px;
-    margin: 20px auto 40px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: 400px;
+    /* Reduziert die max-width für eine bessere Ausrichtung mit dem Buzzer */
 }
 
 .status-message.huge-status {
     font-size: 1.3em;
     font-weight: 400;
     margin-top: 10px;
-    color: var(--info-color); 
+    color: var(--info-color);
 }
 
 .player-game-layout {
     display: grid;
-    grid-template-columns: 2fr 1fr; /* Buzzer-Spalte ist doppelt so breit */
+    grid-template-columns: 2fr 1fr;
+    /* Buzzer-Spalte ist doppelt so breit */
     gap: 30px;
-    max-width: 1000px; /* Begrenzt die maximale Breite des Spiel-Layouts */
+    max-width: 1000px;
+    /* Begrenzt die maximale Breite des Spiel-Layouts */
     margin: 40px auto 0 auto;
-    align-items: start; /* Richtet die Inhalte am oberen Rand aus */
+    align-items: start;
+    /* Richtet die Inhalte am oberen Rand aus */
 }
 
-/* Wrapper für Buzzer und Eingabe */
 .buzzer-area-left {
     display: flex;
     flex-direction: column;
-    align-items: center; /* Zentriert Buzzer und Antwort-Eingabe */
+    align-items: center;
+    /* Zentriert Buzzer und Antwort-Eingabe */
+    gap: 20px;
+    /* Fügt Abstand zwischen den Elementen in der linken Spalte hinzu */
 }
 
 /* Entfernt die alte Zentrierung, da der Buzzer jetzt im Flex-Container ist */
 .buzzer-container {
-    margin: 0; 
-    max-width: none; 
+    margin: 0;
+    max-width: none;
 }
 
 /* Sorgt dafür, dass die Antwort-Eingabe die volle Spaltenbreite nutzt */
 .answer-submission-area {
     margin-left: auto;
     margin-right: auto;
-    width: 100%; 
+    width: 100%;
     max-width: 600px;
 }
 
 /* NEU: Score Card zur Flex-Struktur anpassen */
 .card.score-card {
-    flex-grow: 0; /* Setzt flex-grow explizit auf 0 */
-    height: fit-content; /* Passt die Höhe an den Inhalt an */
+    flex-grow: 0;
+    /* Setzt flex-grow explizit auf 0 */
+    height: fit-content;
+    /* Passt die Höhe an den Inhalt an */
     display: flex;
     flex-direction: column;
-    min-height: 200px; 
+    min-height: 200px;
 }
 
 .styled-table-wrapper {
     overflow-x: auto;
     /* flex-grow: 1; ENTFERNT: Der Wrapper soll nicht mehr den gesamten Restplatz im Card einnehmen */
     flex-grow: 0;
-    
+
     /* NEU: Ermöglicht internes Scrollen bei langer Spielerliste */
-    max-height: 450px; /* Setzt eine maximale Höhe von 450px (kann angepasst werden) */
+    max-height: 450px;
+    /* Setzt eine maximale Höhe von 450px (kann angepasst werden) */
     overflow-y: auto;
-    padding-right: 5px; 
+    padding-right: 5px;
 }
 
 .styled-table {
     width: 100%;
-    border-collapse: separate; 
-    border-spacing: 0 5px; 
+    border-collapse: separate;
+    border-spacing: 0 5px;
 }
 
 .styled-table thead th {
@@ -157,8 +173,13 @@
     text-transform: uppercase;
 }
 
-.styled-table thead th:first-child { border-top-left-radius: 4px; }
-.styled-table thead th:last-child { border-top-right-radius: 4px; }
+.styled-table thead th:first-child {
+    border-top-left-radius: 4px;
+}
+
+.styled-table thead th:last-child {
+    border-top-right-radius: 4px;
+}
 
 .styled-table tbody td {
     padding: 12px 10px;
@@ -173,7 +194,7 @@
 .score-column {
     text-align: right;
     font-weight: bold;
-    color: var(--secondary-accent); 
+    color: var(--secondary-accent);
 }
 
 .player-name-col {
@@ -183,16 +204,66 @@
 /* Responsives Design: Auf kleinen Bildschirmen wieder untereinander */
 @media (max-width: 850px) {
     .player-game-layout {
-        grid-template-columns: 1fr; /* Zurück zu einer Spalte */
+        grid-template-columns: 1fr;
+        /* Zurück zu einer Spalte */
         gap: 20px;
     }
+
     /* Buzzer oben, Scoreboard unten auf Mobile */
     .player-score-card {
         order: 2;
     }
+
     .buzzer-area-left {
         order: 1;
     }
 }
 
+.skip-button-style {
+    /* Verwenden Sie die Sekundärfarbe für visuelle Unterscheidung */
+    background-color: var(--secondary-accent);
+    color: var(--background-color);
+    border: 2px solid var(--secondary-accent);
+    box-shadow: 0 0 5px var(--secondary-accent);
+    transition: all 0.2s ease-in-out;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 12px 20px;
+    margin-top: 10px;
+    width: 100%;
+    /* Button füllt den kleinen Container aus */
+}
 
+.skip-button-style:hover:not(:disabled) {
+    /* Neon-Outline beim Hover */
+    background-color: transparent;
+    color: var(--secondary-accent);
+    box-shadow: 0 0 15px var(--secondary-accent);
+}
+
+/* Stil, wenn der Button deaktiviert ist (nach dem Senden der Anfrage) */
+.skip-button-style:disabled {
+    background-color: #555;
+    color: #999;
+    border-color: #555;
+    box-shadow: none;
+    cursor: not-allowed;
+    /* Der Text "Anfrage gesendet! 👍" bleibt sichtbar, aber der Button ist gedimmt */
+}
+
+/* Etwas Stil für den kleinen Skip-Container */
+.small-card.action-card {
+    /* Hebt den Container mit der Sekundärfarbe hervor */
+    border-left: 3px solid var(--secondary-accent);
+    padding: 15px;
+}
+
+/* Positioniert die Skip-Controls nun direkt über dem Buzzer/Eingabebereich */
+#skip-controls {
+    width: 100%;
+    /* Sorgt dafür, dass es die volle Breite der linken Spalte nutzt */
+    max-width: 400px;
+    /* Begrenzt es wie den Buzzer */
+    margin-top: 0;
+    /* Entfernt unnötigen oberen Rand, falls vorhanden */
+}

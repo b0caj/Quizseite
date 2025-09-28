@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Buzzer - Spieler</title>
-    <link rel="stylesheet" href="style.css"> 
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body class="player-body">
     <header class="player-header">
         <h1>Buzzerraum</h1>
     </header>
-    
+
     <main class="content-container">
-        
+
         <section id="auth-section" class="auth-section">
             <div id="login-form" class="auth-card">
                 <h2>Buzzerraum Login</h2>
@@ -24,7 +26,8 @@
 
             <div id="register-area" class="auth-card register-card">
                 <h3>Noch kein Konto?</h3>
-                <input type="text" id="reg-username" placeholder="Neuer Benutzername" class="input-field neon-border"><br>
+                <input type="text" id="reg-username" placeholder="Neuer Benutzername"
+                    class="input-field neon-border"><br>
                 <input type="password" id="reg-password" placeholder="Passwort" class="input-field neon-border"><br>
                 <button onclick="handleRegister()" class="button secondary-accent glow">Registrieren</button>
                 <p id="register-status" class="status-message"></p>
@@ -32,7 +35,7 @@
         </section>
 
         <section id="buzzer-area" class="buzzer-section" style="display:none;">
-            
+
             <div class="game-top-bar">
                 <h2 id="welcome-message">Willkommen! </h2>
                 <div class="top-controls">
@@ -40,8 +43,10 @@
                     <button onclick="logout()" class="button danger small-button">Logout</button>
                 </div>
             </div>
-            
+
             <div class="player-game-layout">
+
+
 
                 <div class="buzzer-area-left">
                     <div class="buzzer-container">
@@ -49,8 +54,16 @@
                         <p id="buzzer-status" class="status-message huge-status">Warte auf die nächste Frage...</p>
                     </div>
 
+                    <div id="skip-controls" class="card action-card small-card">
+                        <p class="card-title">Frage zu schwer?</p>
+                        <button id="skip-button" onclick="requestSkip()" class="button action skip-button-style">
+                            Frage überspringen anfragen
+                        </button>
+                    </div>
+
                     <div class="answer-submission-area">
-                        <input type="text" id="answer-input" placeholder="Deine Antwort..." class="input-field neon-border">
+                        <input type="text" id="answer-input" placeholder="Deine Antwort..."
+                            class="input-field neon-border">
                         <button onclick="submitAnswer()" class="button success small-button">Antwort senden</button>
                     </div>
                 </div>
@@ -59,14 +72,14 @@
                     <h2 class="card-title">Aktueller Punktestand</h2>
                     <div class="styled-table-wrapper scrollable-content">
                         <table id="current-scores" class="styled-table">
-                        <thead>
-                            <tr>
-                                <th class="player-name-col">Spieler</th>
-                                <th class="score-column">Punkte</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
+                            <thead>
+                                <tr>
+                                    <th class="player-name-col">Spieler</th>
+                                    <th class="score-column">Punkte</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -74,7 +87,8 @@
         </section>
     </main>
 
-    <script src="/socket.io/socket.io.js"></script> 
-    <script src="/js/index.js"></script> 
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/index.js"></script>
 </body>
+
 </html>
