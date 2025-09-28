@@ -49,15 +49,6 @@ function lockBuzzer() {
         document.getElementById('buzzer-status').textContent = 'Buzzer ist gesperrt.';
     }
 }
-
-// NEUE FUNKTION: Sendet das Event zum Sperren des Buzzers
-function lockBuzzer() {
-    if (socket) {
-        socket.emit('lockBuzzer'); // Sendet das neue Event an den Server
-        // Optional: Sofortige visuelle Rückmeldung im Host-Dashboard
-        document.getElementById('buzzer-status').textContent = 'Buzzer ist gesperrt.';
-    }
-}
         
         function triggerScoreAdjustment() {
     // NEU: Wert aus dem Dropdown statt aus dem Textfeld auslesen
@@ -329,7 +320,7 @@ function scorePlayer(type) {
                 document.getElementById('buzzer-status').textContent = 'Buzzer ist frei.';
                 document.getElementById('buzz-details').textContent = 'Warte auf den ersten Buzzer...';
                 document.getElementById('answer-controls').style.display = 'none';
-                document.getElementById('answers-list').innerHTML = '';
+                //document.getElementById('answers-list').innerHTML = '';
             });
 
             // NEU: Listener für Live-Tipp-Updates
@@ -360,17 +351,22 @@ socket.on('typingUpdate', (data) => {
 });
             
             socket.on('newAnswer', (data) => {
+                // Finde das Element, in dem du die neueste Antwort anzeigen möchtest.
+                // Ich gehe davon aus, dass du ein neues Element dafür erstellen musst, z.B. <p id="latest-answer-display"></p>
+                
+                // Da du eine Liste hast ('answers-list'), löschen wir den Inhalt 
+                // und fügen nur die neue Antwort als *einziges* Element hinzu.
+                const answersList = document.getElementById('answers-list');
+                answersList.innerHTML = ''; // Vorherige Antworten entfernen
+
                 const li = document.createElement('li');
                 li.textContent = `[${data.username}]: ${data.answer}`;
-                document.getElementById('answers-list').appendChild(li);
+                answersList.appendChild(li);
+                
+                // Optional: Füge eine visuelle Markierung hinzu (z.B. einen blinkenden Rahmen).
+                console.log(`[HOST] Letzte Antwort: ${data.username}: ${data.answer}`);
             });
-
-            // Listener für Punktestand
-            socket.on('initialScores', (scores) => { updateScoreboard(scores); });
-            socket.on('currentScoreUpdate', (scores) => { updateScoreboard(scores); });
-            socket.on('gameEnded', () => { updateScoreboard({}); });
         }
-
         function playSound(file) {
     const audio = new Audio(`/assets/${file}.mp3`); // Pfad anpassen!
     audio.play().catch(e => console.log("Audio konnte nicht abgespielt werden:", e));

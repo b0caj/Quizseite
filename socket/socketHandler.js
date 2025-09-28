@@ -120,7 +120,7 @@ socket.on('lockBuzzer', () => {
                 username: user.username,
                 timestamp: new Date().toISOString()
             };
-            currentAnswers = []; // Antworten für die neue Frage zurücksetzen
+            //currentAnswers = []; // Antworten für die neue Frage zurücksetzen
 
             // Broadcast an ALLE (auch den Host): Jemand hat gebuzzert!
             io.emit('buzzed', {
@@ -239,7 +239,7 @@ socket.on('resetBuzzer', () => {
         if (buzzerLocked) {
             buzzerLocked = false;
             firstBuzzer = null;
-            currentAnswers = []; // Wichtig: Temporäre Antworten löschen
+            //currentAnswers = []; // Wichtig: Temporäre Antworten löschen
 
             // Broadcast an ALLE: Der Buzzer ist wieder frei!
             io.emit('resetQuestion');
