@@ -357,7 +357,7 @@ function scorePlayer(type) {
     // Setze die globale Variable und zeige die Elemente an
     timerSeconds = duration;
     document.getElementById('host-timer-display').style.display = 'block';
-    document.getElementById('timer-player-info').textContent = `${username} muss nun antworten...`;
+    ent.getElementById('timer-player-info').textContent = `${username} muss nun antworten...`;
 
     // Timer-Anzeige initialisieren
     document.getElementById('timer-countdown').textContent = `${timerSeconds}s`;
@@ -392,22 +392,25 @@ function stopTimer() {
     document.getElementById('timer-player-info').textContent = '';
 }
 
-        function connectSocket() {
-            if (!token) return;
-            
-            socket = io({ query: { token: token } });
-
-            socket.on('playerListUpdate', (players) => {
-    const select = document.getElementById('adj-player-select');
-    select.innerHTML = '<option value="" disabled selected>Wähle einen Spieler</option>'; // Zurücksetzen
-
-    players.forEach(player => {
-        const option = document.createElement('option');
-        option.value = player.username; // Wir senden den Benutzernamen
-        option.textContent = player.username;
-        select.appendChild(option);
+function connectSocket() {
+    if (!token) return;
+    
+    // 🔑 KORREKTUR: Token muss im 'auth'-Objekt gesendet werden
+    socket = io({ 
+        auth: { 
+            token: token 
+        } 
+    }); 
+    
+    // Fügen Sie zur Sicherheit diese Debug-Listener hinzu, 
+    // um die Verbindung zu bestätigen oder Fehler zu sehen:
+    socket.on('connect', () => {
+        console.log("✅ Socket.IO verbunden! Host-Dashboard sollte nun funktionieren.");
     });
-});
+    
+    socket.on('connect_error', (err) => {
+        console.error(`❌ Kritischer Verbindungsfehler: ${err.message}`);
+    });
 
 // NEUER LISTENER: Empfängt den Skip-Wunsch vom Server
 socket.on('playerSkipRequest', (data) => { 
