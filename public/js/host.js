@@ -323,6 +323,10 @@ function scorePlayer(type) {
                 //document.getElementById('answers-list').innerHTML = '';
             });
 
+socket.on('currentScoreUpdate', (scores) => {
+    updateScoreboard(scores); // <-- DIESE ZUSAMMENFÜHRUNG FEHLT IM HOST-JS
+});
+
             // NEU: Listener für Live-Tipp-Updates
 socket.on('typingUpdate', (data) => {
     const container = document.getElementById('live-typing-updates');
