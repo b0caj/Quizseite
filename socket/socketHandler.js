@@ -10,9 +10,6 @@ let firstBuzzer = null;
 let currentPlayers = {}; 
 let currentAnswers = []; 
 let gameScores = {}; 
-let buzzerTimer = null; // Speichert den setInterval Handler
-const BUZZER_TIME = 10; // 10 Sekunden
-let currentTimerSeconds = 0;
 // --- End Globaler Spielzustand ---
 
 function emitPlayerListToHost(io) {
@@ -35,242 +32,356 @@ module.exports = (io) => {
     
     // HIER GESAMTEN io.on('connection', ...) BLOCK EINFÜGEN
     // Wichtig: Entferne den 'async' aus der Funktion, wenn du ihn nicht brauchst.
-io.on('connection', async (socket) => { // async, da wir DB-Zugriffe im connect-Block haben
-    let user = null; 
-    let token = socket.handshake.auth.token;
-
-    // 1. Authentifizierung & User-Daten laden
-    if (token) {
-        try {
-            const decoded = jsonwebtoken.verify(token, process.env.JWT_SECRET);
-            user = await Player.findById(decoded.id).select('-password');
-            
-            if (user) {
-                // Spieler oder Host zur globalen Liste hinzufügen
-                currentPlayers[socket.id] = { 
-                    id: user._id.toString(), 
-                    username: user.username, 
-                    isHost: user.isHost,
-                    socketId: socket.id
-                };
-                console.log(`👤 ${user.username} verbunden. Host: ${user.isHost}`);
-                
-                // Host mit Spielzustand und Listen aktualisieren
-                if (user.isHost) {
-                    socket.emit('gameState', {
-                        buzzerLocked,
-                        firstBuzzer: firstBuzzer ? currentPlayers[firstBuzzer].username : null,
-                        gameScores
-                    });
-                }
-                
-                // Initialer Scoreboard- und Player-List-Update
-                io.emit('updateScoreboard', gameScores);
-                emitPlayerListToHost(io);
-            }
-        } catch (error) {
-            console.log('❌ Auth-Fehler oder Spieler nicht gefunden:', error.message);
-            socket.emit('authError', 'Ungültiges oder abgelaufenes Token.');
-            socket.disconnect();
-            return;
-        }
+io.on('connection', async (socket) => {
+    // 1. JWT-Prüfung beim Verbindungsaufbau
+    // Der Client muss das Token über die Query-Parameter mitsenden
+    const token = socket.handshake.query.token;
+    
+    if (!token) {
+        console.log(`❌ Verbindung blockiert: Kein Token gesendet (${socket.id})`);
+        socket.disconnect();
+        return;
     }
 
+    
+    
+    let user;
+    try {
+        // Wir verwenden dieselbe JWT_SECRET wie für die API
+        user = jsonwebtoken.verify(token, process.env.JWT_SECRET);
+        
+        // Füge den identifizierten Benutzer zu den aktuell verbundenen Spielern hinzu
+        currentPlayers[socket.id] = { 
+            id: user.id, 
+            username: user.username,
+            isHost: user.isHost
+        };
 
-    // 2. Client-Events verarbeiten
+        // NEU: Host-Steuerung zum expliziten Sperren des Buzzers
+socket.on('lockBuzzer', () => {
+    // 1. Host-Verifizierung
+    if (!user.isHost) {
+        console.log('❌ UNBEFUGTER ZUGRIFF: Buzzer-Sperrung abgelehnt.');
+        return;
+    }
 
+    if (!buzzerLocked) {
+        buzzerLocked = true;
+        firstBuzzer = null; // Stellt sicher, dass kein vorheriger Buzzer-Gewinner übrig bleibt
+        currentAnswers = []; // Antworten zurücksetzen
+
+        // Sende den Zustand an alle Clients
+        // Sie könnten ein allgemeines 'gameState'-Event oder ein spezifisches 'buzzed'-Event senden.
+        // Da es sich um eine manuelle Sperrung handelt, senden wir ein State-Update.
+        io.emit('gameState', {
+            buzzerLocked: true,
+            firstBuzzer: null
+        });
+
+        // Alternativ: Das 'buzzed'-Event mit einem generischen Text senden, um das Frontend der Spieler auszulösen
+        // io.emit('buzzed', { username: 'Der Host', time: new Date().toISOString() }); 
+
+        console.log(`🔒 HOST: Buzzer wurde von ${user.username} GESPERRT.`);
+    }
+});
+
+
+
+        // NEU: Sende den gesamten aktuellen Punktestand beim Verbinden
+        socket.emit('initialScores', gameScores); 
+
+        console.log(`✅ Benutzer verbunden: ${user.username} (${socket.id}). Host: ${user.isHost}`);
+
+        // Sende den aktuellen Zustand an den neuen Spieler
+        socket.emit('gameState', {
+            buzzerLocked,
+            firstBuzzer: firstBuzzer ? firstBuzzer.username : null // Sende nur den Namen
+        });
+
+    } catch (err) {
+        console.log(`❌ Verbindung blockiert: Token ungültig (${socket.id})`);
+        socket.disconnect();
+        return;
+    }
+
+      emitPlayerListToHost(io); 
+
+    // ----------------------------------------------------
+    // 2. BUZZER LOGIK (Spieler-Event)
+    // ----------------------------------------------------
     socket.on('buzz', () => {
-        if (!user || user.isHost) return; // Hosts können nicht buzzern
-        if (buzzerLocked) {
-            socket.emit('buzzerLocked', { firstBuzzer: currentPlayers[firstBuzzer].username });
+        // Nur Spieler dürfen buzzern, kein Host
+        if (user.isHost) return; 
+
+        if (!buzzerLocked) {
+            buzzerLocked = true;
+            firstBuzzer = {
+                id: user.id,
+                username: user.username,
+                timestamp: new Date().toISOString()
+            };
+            currentAnswers = []; // Antworten für die neue Frage zurücksetzen
+
+            // Broadcast an ALLE (auch den Host): Jemand hat gebuzzert!
+            io.emit('buzzed', {
+                username: firstBuzzer.username,
+                time: firstBuzzer.timestamp
+            });
+
+            console.log(`🔔 BUZZ: ${firstBuzzer.username} ist am Zug.`);
+        }
+    });
+    
+    // ----------------------------------------------------
+    // 3. ANTWORT SENDEN LOGIK (Spieler-Event)
+    // ----------------------------------------------------
+    socket.on('submitAnswer', (answer) => {
+        if (user.isHost) return; 
+        
+            
+            // Speichere die offizielle Antwort, falls der Host eine Historie braucht
+            currentAnswers.push({ 
+                playerId: user.id, 
+                username: user.username, 
+                answer: answer.text, 
+                time: new Date().toISOString() 
+            });
+
+            // Sende die Antwort NUR an den Host zur Entscheidung
+            // (Hier musst du später wissen, welche Socket-ID der Host hat, 
+            // vorerst senden wir es an alle und der Host-Client filtert.)
+            io.emit('newAnswer', { username: user.username, answer: answer.text });
+
+            console.log(`✉️ Antwort erhalten von ${user.username}: ${answer.text}`);
+    });
+
+    // NEU: Live-Tippen-Event vom Spieler empfangen und an alle weiterleiten
+socket.on('playerTyping', (data) => {
+    // Sicherstellen, dass nur Spieler-Eingaben verarbeitet werden
+    if (user.isHost) return;
+
+    // Sende die Eingabe an alle Clients. Der Host wird darauf reagieren.
+    // Wichtig: Wir senden den Benutzernamen mit, damit der Host weiß, WER tippt.
+    io.emit('typingUpdate', {
+        username: currentPlayers[socket.id].username, // Greife auf den gespeicherten Usernamen zu
+        text: data.text
+    });
+});
+
+// NEU: Manueller Punkteabzug/Hinzufügung durch den Host
+    socket.on('manualScoreAdjustment', (data) => {
+        // 1. Host-Verifizierung
+        // Wir verlassen uns auf das von der JWT-Middleware hinzugefügte socket.user-Objekt
+        if (!user || !user.isHost) {
+            console.log('❌ UNBEFUGTER ZUGRIFF: Score-Anpassung abgelehnt.');
             return;
         }
 
-        buzzerLocked = true;
-        firstBuzzer = socket.id;
-
-        // Score-Objekt initialisieren, falls nicht vorhanden
-        if (!gameScores[user.id]) {
-            gameScores[user.id] = { username: user.username, points: 0, firstBuzzes: 0, correct: 0, wrong: 0 };
-        }
-        gameScores[user.id].firstBuzzes++; // Zähle den Buzzer-Vorgang
-
-        // Clients über den gebuzzten Spieler informieren
-        const buzzerData = {
-            username: user.username,
-            buzzerLocked: true,
-            playerId: user.id
-        };
+        const { username, amount } = data;
         
-        // Sende das Event an alle
-        io.emit('buzzed', buzzerData);
-        console.log(`🚨 BUZZ: ${user.username} hat gebuzzert.`);
+        // 2. Finde die Spieler-ID anhand des Benutzernamens in currentPlayers
+        let playerIdToAdjust = null;
+        let foundPlayer = null;
 
-        // --- NEU: Timer-Start-Events senden ---
-        const timerDuration = 10; // 10 Sekunden Zeit für die Antwort
-        io.emit('timerStarted', { duration: timerDuration, username: user.username });
-        // ------------------------------------
-    });
-    
-    // --- NEU: Listener für abgelaufenen Timer ---
-    socket.on('timerExpired', () => {
-        // Nur der Host kann diesen Event senden, um den Zustand zurückzusetzen
-        if (!user || !user.isHost) return;
-        
-        console.log(`⏱️ HOST: Timer abgelaufen. Setze Spielzustand zurück.`);
-        
-        // 1. Zustand zurücksetzen (entsperrt den Buzzer)
-        buzzerLocked = false;
-        firstBuzzer = null;
-        currentAnswers = []; // Gesammelte Antworten zurücksetzen
-
-        // 2. Clients informieren
-        io.emit('gameState', {
-            buzzerLocked: false,
-            firstBuzzer: null,
-            gameScores // Sendet auch die aktuellen Scores
-        });
-        
-        // 3. Informiere die Spieler, dass sie ihren Timer stoppen sollen
-        io.emit('resetBuzzer'); 
-    });
-    // ------------------------------------------
-
-    socket.on('submitAnswer', (answerText) => {
-        if (!user || user.isHost || socket.id !== firstBuzzer || !buzzerLocked) return;
-
-        console.log(`📝 ANTWORT: ${user.username} hat geantwortet: ${answerText}`);
-        
-        // Antwort speichern und an Host senden
-        const answer = {
-            username: user.username,
-            answer: answerText,
-            timestamp: Date.now()
-        };
-        currentAnswers.push(answer);
-        
-        // Sende die Antwort nur an den Host (könnte gefiltert werden, indem man nur den Host-Socket anspricht)
-        io.emit('latestAnswer', answer); 
-    });
-
-    socket.on('scoreAnswer', ({ playerId, isCorrect, correctPoints, incorrectPoints }) => {
-        if (!user || !user.isHost) return; // Nur der Host darf werten
-        if (!buzzerLocked) return; // Nur werten, wenn der Buzzer gesperrt ist (es also einen Buzzer gab)
-
-        const scoreChange = isCorrect ? parseInt(correctPoints) : parseInt(incorrectPoints);
-        
-        // Stelle sicher, dass das Score-Objekt existiert
-        if (!gameScores[playerId]) {
-             // Sollte nicht passieren, wenn der Buzzer-Flow korrekt war
-             gameScores[playerId] = { username: currentPlayers[firstBuzzer]?.username || 'Unbekannt', points: 0, firstBuzzes: 0, correct: 0, wrong: 0 };
-        }
-        
-        // Punkte aktualisieren
-        gameScores[playerId].points += scoreChange;
-        
-        // Richtige/Falsche Zähler aktualisieren
-        if (isCorrect) {
-            gameScores[playerId].correct++;
-        } else {
-            gameScores[playerId].wrong++;
-        }
-
-        console.log(`✅ WERTUNG: Spieler ${gameScores[playerId].username} erhält ${scoreChange} Punkte. Neues Score: ${gameScores[playerId].points}`);
-
-        // Zustand zurücksetzen
-        buzzerLocked = false;
-        firstBuzzer = null;
-        currentAnswers = []; // Antworten leeren
-
-        // Clients informieren
-        io.emit('updateScoreboard', gameScores);
-        io.emit('gameState', {
-            buzzerLocked: false,
-            firstBuzzer: null
-        });
-        
-        // --- NEU: Informiere die Clients, dass der Timer gestoppt und der Buzzer freigegeben werden soll ---
-        io.emit('resetBuzzer'); 
-        // -------------------------------------------------------------------------------------------------
-    });
-    
-    socket.on('requestSkip', () => {
-        if (!user || user.isHost) return;
-
-        // Informiere nur den Host, wer geskippt hat.
-        // Die Logik, wann wirklich geskippt wird, liegt beim Host.
-        io.emit('playerSkipRequest', { username: user.username });
-        console.log(`⏭️ SKIP: ${user.username} möchte skippen.`);
-    });
-    
-    socket.on('endGame', async () => {
-        if (!user || !user.isHost) return;
-        
-        // Finde den Gewinner
-        let winner = null;
-        let maxPoints = -Infinity;
-        for (const id in gameScores) {
-            if (gameScores[id].points > maxPoints) {
-                maxPoints = gameScores[id].points;
-                winner = id;
+        // Durchsuche alle aktuell verbundenen Spieler
+        for (const socketId in currentPlayers) {
+        if (currentPlayers[socketId].username === username) {
+            // Die ID, die wir benötigen, ist die Benutzer-ID (user.id), 
+            // nicht die Socket-ID.
+            playerIdToAdjust = currentPlayers[socketId].id; 
+            foundPlayer = currentPlayers[socketId];
+            break; 
             }
         }
-        
-        // 1. Speichere das Spiel in der Datenbank
-        const newGame = new Game({
-            date: new Date(),
-            scores: gameScores,
-            winner: winner,
-            host: user._id
-        });
-        await newGame.save();
-        console.log(`💾 HOST: Spiel ${newGame._id} gespeichert.`);
 
-        // 2. Filtere nur Spieler, die Punkte gesammelt haben (Behebt den ReferenceError)
-        const playerIds = Object.keys(gameScores); 
+        if (playerIdToAdjust && typeof amount === 'number' && amount !== 0) {
+    
+    // NEU: Wenn der Spieler in gameScores noch nicht existiert, initialisiere ihn mit 0 Punkten.
+    if (!gameScores[playerIdToAdjust]) {
+        gameScores[playerIdToAdjust] = { 
+            points: 0, 
+            firstBuzzes: 0, 
+            username: username, // Verwende den Benutzernamen aus dem Request
+            correct: 0, 
+            wrong: 0 
+        };
+    }
+    
+    // 3. Punkte anpassen
+    gameScores[playerIdToAdjust].points += amount;
+    
+    console.log(`✅ HOST: Punkte von ${username} manuell angepasst um ${amount}. Neuer Score: ${gameScores[playerIdToAdjust].points}`);
 
-        console.log(`📊 HOST: Aktualisiere kumulierte Statistiken für ${playerIds.length} Spieler...`);
+    // 4. Aktualisierten Scoreboard an alle senden
+    io.emit('currentScoreUpdate', gameScores);
+} else {
+    console.log(`⚠️ HOST: Anpassung fehlgeschlagen. Spieler ${username} nicht gefunden (nur noch verbundene Spieler) oder ungültiger Betrag.`);
+}
+});
 
-        // 3. Kumulierte Spieler-Statistiken (Player-Modell) aktualisieren
-        for (const playerId of playerIds) { 
-            // Wir verwenden || 0, um sicherzustellen, dass auch neue Spieler ohne alle Zähler korrekt gespeichert werden
-            const stats = gameScores[playerId];
+    // ----------------------------------------------------
+    // 4. VERBINDUNG TRENNEN
+    // ----------------------------------------------------
+    socket.on('disconnect', () => {
+        delete currentPlayers[socket.id];
+        console.log(`🔌 Benutzer getrennt: ${user.username} (${socket.id})`);
+        // HIER EINFÜGEN: Nach dem Löschen des Spielers
+        delete currentPlayers[socket.id]; 
 
-            await Player.findByIdAndUpdate(playerId, {
-                $inc: {
-                    totalGamesPlayed: 1, // Spielanzahl um 1 erhöhen
-                    totalPoints: stats.points, // Gesamtpunkte addieren
-                    totalFirstBuzzes: stats.firstBuzzes, // Gesamt-Buzzes addieren
-                    
-                    // NEU: Hinzufügen der richtigen/falschen Antworten
-                    totalCorrectAnswers: stats.correct || 0,
-                    totalWrongAnswers: stats.wrong || 0
-                }
-            });
+        // Sende die aktualisierte Liste nach Trennung
+        emitPlayerListToHost(io); 
+    });
+
+socket.on('resetBuzzer', () => {
+        // Nur Hosts dürfen zurücksetzen
+        if (!user.isHost) return; 
+
+        if (buzzerLocked) {
+            buzzerLocked = false;
+            firstBuzzer = null;
+            currentAnswers = []; // Wichtig: Temporäre Antworten löschen
+
+            // Broadcast an ALLE: Der Buzzer ist wieder frei!
+            io.emit('resetQuestion');
+
+            console.log(`🔄 HOST: Buzzer wurde von ${user.username} zurückgesetzt.`);
         }
-        console.log(`✅ HOST: Kumulierte Spieler-Statistiken aktualisiert.`);
+    });
 
-        // 4. Globalen Zustand zurücksetzen und alle informieren
+    // ----------------------------------------------------
+    // 6. HOST-STEUERUNG: Spieler bewerten/punkten
+    // ----------------------------------------------------
+    // server.js (Innerhalb des io.on('connection', ...) Blocks)
+
+    // 6. HOST-STEUERUNG: Spieler bewerten/punkten (AKTUALISIERT)
+// socket/socketHandler.js (Ersetze den gesamten Block 'scorePlayer')
+
+socket.on('scorePlayer', ({ type, points }) => {
+    
+    // Prüfe, ob es der Host ist und ob überhaupt jemand gebuzzert hat
+    if (!user.isHost || !firstBuzzer) return; 
+
+    // *** WICHTIGE FIX: Konvertiere den Punktwert in eine Ganzzahl (Integer) ***
+    // Dadurch wird eine String-Konkatenation (z.B. "0" + "10" = "010") verhindert.
+     const scorePoints = Math.floor(Number(points));
+
+     // Prüfe nur auf NaN/null/undefined und setze auf 0 als Fallback
+    if (isNaN(scorePoints)) {
+        console.error("Ungültiger Punktewert vom Host empfangen: ", points);
+        return; // Oder setze auf 0, je nach gewünschtem Verhalten
+    }
+    
+    // Die Korrektheit wird direkt vom Host-Klick abgeleitet
+    const isCorrect = (type === 'correct'); 
+    
+    // Sicherstellen, dass der Score-Eintrag existiert
+    if (!gameScores[firstBuzzer.id]) {
+        gameScores[firstBuzzer.id] = { points: 0, firstBuzzes: 0, username: firstBuzzer.username, correct: 0, wrong: 0 };
+    }
+    
+    // Korrekte mathematische Addition des Zahlenwerts!
+    gameScores[firstBuzzer.id].points += scorePoints;
+    gameScores[firstBuzzer.id].firstBuzzes += 1;
+
+    
+
+    if (isCorrect) {
+        gameScores[firstBuzzer.id].correct += 1;
+    } else {
+        gameScores[firstBuzzer.id].wrong += 1;
+    }
+
+    // Aktualisiere das Scoreboard für alle Clients
+    io.emit('currentScoreUpdate', gameScores);
+
+    // Sende spezifisches Event für Sound-Feedback (basierend auf 'type')
+    if (isCorrect) {
+        io.emit('correctAnswer', { username: firstBuzzer.username, points: scorePoints });
+    } else {
+        io.emit('wrongAnswer', { username: firstBuzzer.username, points: scorePoints });
+    }
+    
+    console.log(`💰 HOST: ${firstBuzzer.username} als ${type} gewertet. Erhält ${scorePoints} Punkte. Neuer Score: ${gameScores[firstBuzzer.id].points}`);
+
+    // Buzzer für die nächste Frage zurücksetzen
+    buzzerLocked = false;
+    firstBuzzer = null;
+    currentAnswers = []; 
+    io.emit('resetQuestion');
+});
+
+    // 7. HOST-STEUERUNG: SPIEL BEENDEN und STATISTIKEN SPEICHERN
+socket.on('endGame', async () => {
+        if (!user.isHost) return; 
+
+        
+
+        
+// 1. Game-Historie speichern (Dieser Teil sollte vorhanden sein)
+const playersResults = Object.keys(gameScores).map(id => ({
+    playerId: id,
+    username: gameScores[id].username,
+    points: gameScores[id].points,
+    firstBuzzes: gameScores[id].firstBuzzes,
+    // Fügen Sie hier weitere Felder wie correct/wrong hinzu, falls Sie sie in der Game-Historie speichern wollen
+}));
+
+// Finde den Gewinner
+// ... (Ihre Winner-Logik) ...
+let winner = null;
+let maxPoints = -1;
+for (const id in gameScores) {
+    if (gameScores[id].points > maxPoints) {
+        maxPoints = gameScores[id].points;
+        winner = id;
+    }
+}
+
+const newGame = new Game({
+    playersResults,
+    winnerId: winner 
+});
+await newGame.save();
+console.log(`🎉 SPIEL BEENDET. Ergebnisse in der Game-Historie gespeichert. Gewinner: ${winner}`);
+
+// ----------------------------------------------------
+// !!! KRITISCHE KORREKTUR BEGINNT HIER !!!
+// ----------------------------------------------------
+
+// 2. IDs aller Spieler definieren, die Punkte gesammelt haben (Behebt den ReferenceError)
+const playerIds = Object.keys(gameScores); 
+
+console.log(`📊 HOST: Aktualisiere kumulierte Statistiken für ${playerIds.length} Spieler...`);
+
+// 3. Kumulierte Spieler-Statistiken (Player-Modell) aktualisieren
+for (const playerId of playerIds) { 
+    // Wir verwenden || 0, um sicherzustellen, dass auch neue Spieler ohne alle Zähler korrekt gespeichert werden
+    const stats = gameScores[playerId];
+
+    await Player.findByIdAndUpdate(playerId, {
+        $inc: {
+            totalGamesPlayed: 1, // Spielanzahl um 1 erhöhen
+            totalPoints: stats.points, // Gesamtpunkte addieren
+            totalFirstBuzzes: stats.firstBuzzes, // Gesamt-Buzzes addieren
+            
+            // NEU: Hinzufügen der richtigen/falschen Antworten
+            totalCorrectAnswers: stats.correct || 0,
+            totalWrongAnswers: stats.wrong || 0
+        }
+    });
+}
+console.log(`✅ HOST: Kumulierte Spieler-Statistiken aktualisiert.`);
+
+// 4. Globalen Zustand zurücksetzen und alle informieren
+gameScores = {}; // Spielpunkte leeren
+io.emit('gameEnded', { winnerId: winner }); // Alle Clients informieren
+
+
+        // 3. Globalen Zustand zurücksetzen und alle informieren
         gameScores = {}; // Spielpunkte leeren
         io.emit('gameEnded', { winnerId: winner }); // Alle Clients informieren
+
+        // Optional: Host-Frontend kann nach diesem Event auf die Statistik-Seite umleiten
     });
-    
-    
-    socket.on('disconnect', () => {
-        if (user) {
-            delete currentPlayers[socket.id];
-            console.log(`🚪 ${user.username} getrennt. Aktive Spieler: ${Object.keys(currentPlayers).length}`);
-            
-            // Wenn der gebuzzte Spieler trennt, Buzzer entsperren und Timer zurücksetzen
-            if (firstBuzzer === socket.id) {
-                buzzerLocked = false;
-                firstBuzzer = null;
-                io.emit('gameState', { buzzerLocked: false, firstBuzzer: null });
-                io.emit('resetBuzzer'); // Timer-Reset senden
-            }
-            
-            emitPlayerListToHost(io);
-        }
     });
-});
-};
+}

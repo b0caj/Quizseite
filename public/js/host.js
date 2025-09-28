@@ -5,10 +5,6 @@
         let firstBuzzerId = null; 
         let currentQuiz = null;
         let currentQuestionIndex = 0;
-        let latestPlayerAnswers = {};
-        let playerSkipRequests = {}; // NEU: Speichert die Spieler, die skippen möchten
-        let timerInterval = null;
-        let timerSeconds = 0;
 
         // === ALLGEMEINE FUNKTIONEN ===
 
@@ -39,63 +35,21 @@
                 `;
             });
         }
-
-        function renderLatestAnswers() {
-    const answersList = document.getElementById('answers-list');
-    answersList.innerHTML = ''; // Liste leeren
-
-    // Gehe durch die gespeicherten letzten Antworten und zeige sie an
-    for (const username in latestPlayerAnswers) {
-        const answerData = latestPlayerAnswers[username];
-        const li = document.createElement('li');
-        // Zeige den Zeitstempel (nur Zeit) für Kontext
-        const time = new Date(answerData.time).toLocaleTimeString(); 
-        li.textContent = `[${username} (${time})]: ${answerData.answer}`;
-        answersList.appendChild(li);
-    }
-}
-
-        // NEUE FUNKTION: Aktualisiert die Anzeige der Skip-Wünsche
-// host.js (NACH anderen Funktionen wie updateScoreboard oder renderLatestAnswers)
-
-// NEUE FUNKTION: Aktualisiert die Anzeige der Skip-Wünsche
-function renderSkipRequests() {
-    const skipCountEl = document.getElementById('skip-count'); 
-    const skipListEl = document.getElementById('skip-players-list');
-    
-    // 🔥 DIESER TEST IST WICHTIG
-    if (!skipCountEl || !skipListEl) {
-        console.error("❌ Eines der Skip-DOM-Elemente wurde nicht gefunden!");
-        return; // Die Funktion stoppt hier.
-    }
-    // playerSkipRequests ist die globale Variable, die die Spieler speichert
-    const players = Object.keys(playerSkipRequests); 
-    
-    skipListEl.innerHTML = ''; // ✅ Korrektur: skipListEl verwenden
-
-    skipCountEl.textContent = `${players.length} Spieler möchten skippen.`; // ✅ Korrektur: skipCountEl verwenden
-    
-     // ⬇️ NEUE LOGIK FÜR VISUELLEN ALARM ⬇️
-    if (players.length > 0) {
-        skipRequestArea.classList.add('skip-active');
-    } else {
-        skipRequestArea.classList.remove('skip-active');
-    }
-
-    players.forEach(username => {
-        const li = document.createElement('li');
-        // Zeige den Namen und den Zeitpunkt des Wunsches
-        li.textContent = `${username} (um ${playerSkipRequests[username]})`;
-        list.appendChild(li);
-    });
-}
         
         function resetBuzzer() {
             if (socket) {
                 socket.emit('resetBuzzer');
             }
-             stopTimer(); 
         }
+// NEUE FUNKTION: Sendet das Event zum Sperren des Buzzers
+function lockBuzzer() {
+    if (socket) {
+        socket.emit('lockBuzzer'); // Sendet das neue Event an den Server
+        // Optional: Sofortige visuelle Rückmeldung im Host-Dashboard
+        document.getElementById('buzzer-status').textContent = 'Buzzer ist gesperrt.';
+    }
+}
+
 // NEUE FUNKTION: Sendet das Event zum Sperren des Buzzers
 function lockBuzzer() {
     if (socket) {
@@ -291,14 +245,6 @@ function scorePlayer(type) {
 
             document.getElementById('showAnswerButton').style.display = 'inline-block';
             document.getElementById('nextQuestionButton').disabled = true;
-
-            // NEU: Sendet die aktuelle Fragennummer an alle Clients
-            if (socket) {
-                socket.emit('questionUpdate', { 
-                    current: index + 1, 
-                    total: total 
-                });
-            }
         }
 
         function showAnswer() {
@@ -353,77 +299,21 @@ function scorePlayer(type) {
             }
         }
 
-        function startTimer(duration, username) {
-    // Setze die globale Variable und zeige die Elemente an
-    timerSeconds = duration;
-    document.getElementById('host-timer-display').style.display = 'block';
-    ent.getElementById('timer-player-info').textContent = `${username} muss nun antworten...`;
+        function connectSocket() {
+            if (!token) return;
+            
+            socket = io({ query: { token: token } });
 
-    // Timer-Anzeige initialisieren
-    document.getElementById('timer-countdown').textContent = `${timerSeconds}s`;
+            socket.on('playerListUpdate', (players) => {
+    const select = document.getElementById('adj-player-select');
+    select.innerHTML = '<option value="" disabled selected>Wähle einen Spieler</option>'; // Zurücksetzen
 
-    if (timerInterval) {
-        clearInterval(timerInterval);
-    }
-
-    timerInterval = setInterval(() => {
-        timerSeconds--;
-        document.getElementById('timer-countdown').textContent = `${timerSeconds}s`;
-
-        if (timerSeconds <= 0) {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            // Zeige dem Host an, dass der Timer abgelaufen ist
-            document.getElementById('timer-countdown').textContent = 'Zeit abgelaufen!';
-
-            // OPTIONAL: Hier könnte ein Event an den Server gesendet werden,
-            // um z.B. dem Spieler eine falsche Antwort zu geben, wenn nötig.
-        }
-    }, 1000);
-}
-
-function stopTimer() {
-    if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-    }
-    document.getElementById('host-timer-display').style.display = 'none';
-    document.getElementById('timer-countdown').textContent = '';
-    document.getElementById('timer-player-info').textContent = '';
-}
-
-function connectSocket() {
-    if (!token) return;
-    
-    // 🔑 KORREKTUR: Token muss im 'auth'-Objekt gesendet werden
-    socket = io({ 
-        auth: { 
-            token: token 
-        } 
-    }); 
-    
-    // Fügen Sie zur Sicherheit diese Debug-Listener hinzu, 
-    // um die Verbindung zu bestätigen oder Fehler zu sehen:
-    socket.on('connect', () => {
-        console.log("✅ Socket.IO verbunden! Host-Dashboard sollte nun funktionieren.");
+    players.forEach(player => {
+        const option = document.createElement('option');
+        option.value = player.username; // Wir senden den Benutzernamen
+        option.textContent = player.username;
+        select.appendChild(option);
     });
-    
-    socket.on('connect_error', (err) => {
-        console.error(`❌ Kritischer Verbindungsfehler: ${err.message}`);
-    });
-
-// NEUER LISTENER: Empfängt den Skip-Wunsch vom Server
-socket.on('playerSkipRequest', (data) => { 
-    if (!data || !data.username) {
-        console.error("Ungültige Skip-Anfragedaten erhalten.", data);
-        return;
-    }
-    
-    // Speichere den Spieler und den Zeitpunkt.
-    playerSkipRequests[data.username] = data.time || new Date().toLocaleTimeString('de-DE'); 
-    
-    // Aktualisiere die Anzeige
-    renderSkipRequests();
 });
             
             // Listener für Buzzer-Ereignisse
@@ -434,19 +324,8 @@ socket.on('playerSkipRequest', (data) => {
                 document.getElementById('answer-controls').style.display = 'block';
                 playSound('buzz');
             });
-
-            socket.on('newAnswer', (data) => {
-    // Speichere die neue Antwort (überschreibt die alte für diesen Spieler)
-    latestPlayerAnswers[data.username] = {
-        answer: data.answer,
-        time: new Date().toISOString() // Speichere den Zeitpunkt
-    };
-    
-    // Rendere die aktualisierte Liste der letzten Antworten
-    renderLatestAnswers();
-    });
-
-    socket.on('resetQuestion', () => {
+            
+            socket.on('resetQuestion', () => {
                 document.getElementById('buzzer-status').textContent = 'Buzzer ist frei.';
                 document.getElementById('buzz-details').textContent = 'Warte auf den ersten Buzzer...';
                 document.getElementById('answer-controls').style.display = 'none';
@@ -459,33 +338,12 @@ socket.on('typingUpdate', (data) => {
     // Eindeutige ID für den Paragraphen jedes Spielers
     const elementId = `typing-${data.username}`;
     let playerP = document.getElementById(elementId);
-    
 
     // Wenn der Spieler das Feld leert, entferne seine Zeile
     if (data.text.trim() === '' && playerP) {
         playerP.remove();
         return;
     }
-
-// NEU: Timer-Start-Signal vom Server empfangen
-    socket.on('timerStarted', (data) => {
-        startTimer(data.duration, data.username);
-        // Stoppe den Timer, wenn die Antwort ausgewertet wird
-        stopTimerOnAnswerDecision(); 
-    });
-
-// Listener für das Zurücksetzen der Frage anpassen
-socket.on('resetQuestion', () => {
-    document.getElementById('buzzer-status').textContent = 'Buzzer ist frei.';
-    document.getElementById('buzz-details').textContent = 'Warte auf den ersten Buzzer...';
-    document.getElementById('answer-controls').style.display = 'none';
-    document.getElementById('answers-list').innerHTML = ''; 
-    latestPlayerAnswers = {}; 
-    
-    // NEU: Skip-Anfragen beim Zurücksetzen der Frage leeren
-    playerSkipRequests = {}; 
-    renderSkipRequests(); 
-});
 
     // Wenn Text vorhanden ist:
     if (data.text.trim() !== '') {
@@ -500,26 +358,23 @@ socket.on('resetQuestion', () => {
         playerP.textContent = `${data.username}: ${data.text}`;
     }
 });
+            
+            socket.on('newAnswer', (data) => {
+                const li = document.createElement('li');
+                li.textContent = `[${data.username}]: ${data.answer}`;
+                document.getElementById('answers-list').appendChild(li);
+            });
+
             // Listener für Punktestand
             socket.on('initialScores', (scores) => { updateScoreboard(scores); });
             socket.on('currentScoreUpdate', (scores) => { updateScoreboard(scores); });
             socket.on('gameEnded', () => { updateScoreboard({}); });
         }
 
-    function playSound(file) {
+        function playSound(file) {
     const audio = new Audio(`/assets/${file}.mp3`); // Pfad anpassen!
     audio.play().catch(e => console.log("Audio konnte nicht abgespielt werden:", e));
-    }
-
-    function stopTimerOnAnswerDecision() {
-    // Dies sollte aufgerufen werden, wenn der Host 'Richtig', 'Falsch' oder 'Weiter' klickt.
-    // Finde die bestehende Funktion, die nach der Buzzer-Auswertung aufräumt.
-    // Im Standard-Code ist das meistens `resetBuzzerState`.
-
-    // FÜGE den stopTimer() AUFRUF IN DIE Funktion `resetBuzzerState` ein!
 }
-
-
 
         // === SESSION WIEDERHERSTELLEN BEIM LADEN ===
         if (token) {
@@ -560,4 +415,6 @@ socket.on('resetQuestion', () => {
         }
         document.getElementById('answers-list').innerHTML = ''; // Antworten leeren
     }
-}    
+}
+
+    

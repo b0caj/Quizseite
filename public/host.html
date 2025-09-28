@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Host Dashboard | Buzzerraum</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="/css/host.css">
+    <link rel="stylesheet" href="style.css"> 
     
 </head>
 <body class="host-body">
@@ -29,13 +28,6 @@
 
         <div class="card logs-card">
             <h2 class="card-title">Live-Aktivität (Logs)</h2>
-
-            <div id="skip-request-area" class="card" style="margin-top: 20px;">
-    <h3>🔁 Skip-Wünsche</h3>
-    <p id="skip-count">0 Spieler möchten skippen.</p>
-    <ul id="skip-players-list" class="simple-list">
-        </ul>
-    </div>
 
             <div class="controls-group typing-log-group">
                 <h3 class="group-title">Live-Eingaben <span style="color: var(--info-color);"></span></h3>
@@ -86,10 +78,6 @@
                 <p id="buzzer-status" class="status-message huge-status">BUZZER IST FREI.</p>
                 
                 <div class="buzz-details-area">
-                    <div id="host-timer-display" style="display: none;">
-                    <h2 id="timer-countdown" class="neon-text-danger" style="margin-top: 0;"></h2>
-                    <p id="timer-player-info"></p>
-                    </div>
                     <p class="detail-label">Gebuzzert von:</p>
                     <p id="buzzer-winner" class="detail-value winner-placeholder neon-text-highlight">---</p>
                     <p id="buzz-details" class="status-message small">Warte auf den ersten Buzzer...</p>
