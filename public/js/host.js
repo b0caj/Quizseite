@@ -5,6 +5,8 @@ let socket;
 let firstBuzzerId = null;
 let currentQuiz = null;
 let currentQuestionIndex = 0;
+let countdownInterval = null;
+const TIMER_DURATION = 10; // 10 Sekunden
 
 // === ALLGEMEINE FUNKTIONEN ===
 
@@ -40,6 +42,7 @@ function resetBuzzer() {
     if (socket) {
         socket.emit('resetBuzzer');
     }
+    stopBuzzerTimer();
 }
 // NEUE FUNKTION: Sendet das Event zum Sperren des Buzzers
 function lockBuzzer() {
@@ -253,7 +256,7 @@ function nextQuestion() {
     resetBuzzer();
     if (socket && socket.connected) {
         // Sendet das Event an den Server, der dann alle Clients informiert
-        socket.emit('nextQuestion'); 
+        socket.emit('nextQuestion');
     }
 }
 
@@ -318,12 +321,14 @@ function connectSocket() {
         document.getElementById('buzz-details').textContent = `${data.username} hat um ${new Date(data.time).toLocaleTimeString()} gebuzzert.`;
         document.getElementById('answer-controls').style.display = 'block';
         playSound('buzz');
+        startBuzzerTimer();
     });
 
     socket.on('resetQuestion', () => {
         document.getElementById('buzzer-status').textContent = 'Buzzer ist frei.';
         document.getElementById('buzz-details').textContent = 'Warte auf den ersten Buzzer...';
         document.getElementById('answer-controls').style.display = 'none';
+        stopBuzzerTimer(); 
         //document.getElementById('answers-list').innerHTML = '';
     });
 
@@ -407,6 +412,62 @@ if (token) {
     // 3. Verbindung herstellen
     connectSocket();
     loadQuizzes(); // Lade Quizzes direkt nach dem Wiederherstellen
+}
+
+function startBuzzerTimer() {
+    let timeLeft = TIMER_DURATION;
+    const timerDisplay = document.getElementById('buzzer-timer');
+    const timerContainer = document.getElementById('buzzer-timer-container');
+
+    // 1. UI vorbereiten
+    if (timerContainer) {
+        timerContainer.style.display = 'block';
+    }
+
+    // Stoppt jeden vorherigen Timer
+    //stopBuzzerTimer();
+
+    // 2. Startet den Countdown
+    countdownInterval = setInterval(() => {
+        timeLeft -= 1;
+        timerDisplay.textContent = timeLeft;
+        timerDisplay.classList.remove('timer-flash'); // Entfernt den Flash für konstante Anzeige
+
+        // Visuelles Feedback bei geringer Zeit
+        if (timeLeft <= 5) {
+            timerDisplay.classList.add('timer-flash'); // Fügt Flash-Effekt hinzu
+        }
+
+        // Timer abgelaufen
+        if (timeLeft <= 0) {
+            stopBuzzerTimer();
+            timerDisplay.textContent = 'ZEIT ABGELAUFEN!';
+            timerDisplay.classList.remove('timer-flash');
+
+            // Optional: Senden Sie ein Event an den Server, dass der Timer abgelaufen ist (nur Host-Seite)
+            if (typeof isHost !== 'undefined' && isHost) {
+                // Nur wenn es sich um den Host handelt, könnte ein Server-Event gesendet werden
+                // z.B. socket.emit('timesUp');
+            }
+        }
+    }, 1000);
+}
+
+function stopBuzzerTimer() {
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+    }
+    const timerContainer = document.getElementById('buzzer-timer-container');
+    const timerDisplay = document.getElementById('buzzer-timer');
+
+    if (timerContainer) {
+        timerContainer.style.display = 'none';
+    }
+    if (timerDisplay) {
+        timerDisplay.textContent = TIMER_DURATION; // Zurücksetzen auf Startwert
+        timerDisplay.classList.remove('timer-flash');
+    }
 }
 
 function endGame() {

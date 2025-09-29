@@ -285,3 +285,24 @@
     margin-top: 0;
     /* Entfernt unnötigen oberen Rand, falls vorhanden */
 }
+
+.timer-display {
+    text-align: center;
+    font-size: 7vw;
+    /* Sehr groß, um auf allen Geräten sichtbar zu sein */
+    font-weight: bold;
+    margin: 20px 0;
+    padding: 10px;
+    border: 4px solid var(--neon-red, #ff073a);
+    /* Rote Umrandung für Dringlichkeit */
+    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* Stil für die Countdown-Zahl selbst */
+#buzzer-timer {
+    color: var(--neon-red, #ff073a);
+    text-shadow: 0 0 10px var(--neon-red, #ff073a), 0 0 20px rgba(255, 0, 0, 0.5);
+    transition: color 0.3s ease-in-out;
+    /* Für den Flash-Effekt */
+}
