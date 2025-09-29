@@ -356,7 +356,7 @@ if (token) {
     } else if (isLoginPage) {
         // 2. Wenn ein Token vorhanden ist, aber wir auf der login.html sind: 
         // Direkt zur Spielerseite weiterleiten
-        window.location.href = '/player.html';
+        window.location.href = '/login.html';
     }
 } else {
     // 3. Wenn kein Token vorhanden ist und wir auf der Spielerseite sind: 
