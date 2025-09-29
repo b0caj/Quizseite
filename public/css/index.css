@@ -53,17 +53,35 @@
     /* Zentriert den Buzzer und den Status im Container */
 }
 
-.buzzer-button {
-    width: 250px;
-    height: 250px;
-    border-radius: 50%;
-    background-color: var(--primary-color);
-    color: var(--background-color);
-    font-size: 3em;
+#buzzer-button {
+    /* Setzt eine feste Höhe und Breite für eine große Klickfläche */
+    width: 100%;
+    min-height: 250px;
+    /* Erhöht die Höhe deutlich */
+    height: auto;
+
+    /* Erhöht den Innenabstand für mehr Platz um den Text */
+    padding: 30px 20px;
+
+    font-size: 40px;
+    /* Standard-Schriftgröße für den Buzzer-Text */
     font-weight: 900;
-    cursor: pointer;
-    border: 8px solid var(--primary-color);
-    transition: transform 0.1s, box-shadow 0.2s, background-color 0.2s;
+    text-transform: uppercase;
+
+    /* Stellt sicher, dass der Text nicht überläuft */
+    word-wrap: break-word;
+    white-space: normal;
+
+    /* Flex-Container, um den Text optimal zu zentrieren */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1.1;
+    /* Einzeiligen Text ein wenig straffen */
+
+    /* Neon-Stil beibehalten */
+    border-radius: var(--border-radius-large, 15px);
+    box-shadow: 0 0 20px var(--primary-color);
 }
 
 .buzzer-button:not(:disabled):hover {

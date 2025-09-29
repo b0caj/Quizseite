@@ -153,19 +153,19 @@ function connectSocket() {
     });
 
     socket.on('newQuestionStarted', () => {
-    // 1. Skip-Button zurücksetzen und reaktivieren
-    const skipButton = document.getElementById('skip-button');
-    skipButton.textContent = "Frage überspringen anfragen";
-    skipButton.disabled = false;
-    
-    // 2. UI-Elemente zurücksetzen/anzeigen
-    document.getElementById('buzzer-area').style.display = 'block';
-    document.getElementById('skip-controls').style.display = 'block'; 
-    document.getElementById('answer-submission-area').style.display = 'none';
+        // 1. Skip-Button zurücksetzen und reaktivieren
+        const skipButton = document.getElementById('skip-button');
+        skipButton.textContent = "Frage überspringen anfragen";
+        skipButton.disabled = false;
 
-    // 3. Status-Nachricht aktualisieren
-    document.getElementById('buzzer-status').textContent = "BUZZ READY! Warte auf dein Signal.";
-});
+        // 2. UI-Elemente zurücksetzen/anzeigen
+        document.getElementById('buzzer-area').style.display = 'block';
+        document.getElementById('skip-controls').style.display = 'block';
+        document.getElementById('answer-submission-area').style.display = 'none';
+
+        // 3. Status-Nachricht aktualisieren
+        document.getElementById('buzzer-status').textContent = "BUZZ READY! Warte auf dein Signal.";
+    });
 
     // 2. NEU: Empfängt den aktualisierten Punktestand nach jeder Punktevergabe
     socket.on('currentScoreUpdate', (scores) => {
@@ -199,10 +199,26 @@ function connectSocket() {
 }
 
 function buzz() {
-    if (socket) {
+    const buzzerButton = document.getElementById('buzzer-button');
+    const statusEl = document.getElementById('buzzer-status');
+
+    // 1. Client-seitige Sofort-Sperre
+    if (buzzerButton.disabled) {
+        return; // Verhindert Doppelklicks
+    }
+
+    // UI sofort ändern, um Latenz zu überbrücken
+    buzzerButton.disabled = true;
+    //buzzerButton.textContent = "GEBUZZT";
+    statusEl.textContent = "Warte auf Serverbestätigung...";
+
+    // Spielen Sie den Sound sofort ab
+    // Stellen Sie sicher, dass Ihre playSound-Funktion (wenn vorhanden) hier aufgerufen wird:
+    playSound('buzz');
+
+    // 2. Event an den Server senden
+    if (socket && socket.connected) {
         socket.emit('buzz');
-        document.getElementById('buzzer-button').disabled = true;
-        document.getElementById('buzzer-status').textContent = 'Du hast gebuzzert! Warte auf den Host...';
     }
 }
 
