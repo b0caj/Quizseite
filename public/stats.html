@@ -1,35 +1,37 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statistiken & Historie</title>
-    <link rel="stylesheet" href="style.css"> 
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body class="stats-body">
 
     <div class="stats-header-container">
         <button onclick="goBack()" class="button secondary-accent small-button back-button">
-        ← Zurück
+            ← Zurück
         </button>
         <h1 class="neon-text-highlight">🏆 Buzzerraum Ewige Bestenliste</h1>
     </div>
-    
+
     <main class="content-container">
         <p id="status" class="status-message">Lade Statistiken...</p>
-        
+
         <div id="stats-area" class="card styled-table-wrapper leaderboard-card">
             <table id="leaderboard" class="styled-table leaderboard-table">
                 <thead>
                     <tr>
                         <th class="rank">Rang</th>
                         <th class="player-name-col">Spielername</th>
-                        <th>Gesamtpunkte</th>
-                        <th># Erster Buzz</th>
-                        <th># Korrekt</th>
-                        <th># Falsch</th>
-                        <th>Erfolgsquote</th>
-                        <th class="last-col">Gespielte Runden</th>
+                        <th data-sort-key="totalPoints">Gesamtpunkte</th>
+                        <th data-sort-key="totalFirstBuzzes"># Erster Buzz</th>
+                        <th data-sort-key="totalCorrectAnswers"># Korrekt</th>
+                        <th data-sort-key="totalWrongAnswers"># Falsch</th>
+                        <th data-sort-key="successRate">Erfolgsquote</th>
+                        <th class="last-col" data-sort-key="totalGamesPlayed">Gespielte Runden</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -40,4 +42,5 @@
 
     <script src="/js/stats.js"></script>
 </body>
+
 </html>
