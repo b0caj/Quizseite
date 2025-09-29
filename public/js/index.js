@@ -18,24 +18,21 @@ async function handleLogin() {
         const data = await response.json();
 
         if (response.ok) {
-            const isHost = data.isHost; // NEU: Host-Status aus der Antwort abrufen
+            const isHost = data.isHost;
 
             token = data.token;
             localStorage.setItem('token', token);
-            statusEl.textContent = 'Login erfolgreich!';
 
-            // Registrierungsbereich ausblenden
-            document.getElementById('register-area').style.display = 'none';
+            // Registrierungsbereich ausblenden (wird in login.html eh nur kurz angezeigt)
+            // document.getElementById('register-area').style.display = 'none'; // Diese Zeile kann in login.html entfallen
 
-            // 🔑 WICHTIGE LOGIK: Host weiterleiten
             if (isHost) {
                 statusEl.textContent = 'Host-Login erfolgreich! Weiterleitung zur Host-Zentrale...';
-                // Leite den Host zur Host-Seite weiter
                 window.location.href = '/host.html';
             } else {
-                // Spieler: Bleibt auf dieser Seite und verbindet den Buzzer
-                statusEl.textContent = 'Login erfolgreich! Verbinde mit Buzzerraum...';
-                connectSocket();
+                // 🔑 NEU: Weiterleitung zur separaten Spielerseite
+                statusEl.textContent = 'Login erfolgreich! Weiterleitung zum Buzzerraum...';
+                window.location.href = '/player.html';
             }
         } else {
             statusEl.textContent = `Fehler: ${data.message}`;
@@ -118,8 +115,6 @@ function connectSocket() {
         query: { token: token }
     });
 
-    document.getElementById('login-form').style.display = 'none';
-    document.getElementById('buzzer-area').style.display = 'block';
     document.getElementById('welcome-message').textContent = `Hallo ${document.getElementById('username').value}!`;
 
     const answerInput = document.getElementById('answer-input');
@@ -134,6 +129,14 @@ function connectSocket() {
         // NEU: Token an den Server zur Authentifizierung senden
         if (token) {
             socket.emit('authenticate', token);
+        }
+    });
+
+    // 🔑 NEU: Benutzername nach erfolgreicher Authentifizierung setzen
+    socket.on('authSuccess', (data) => {
+        const welcomeMessage = document.getElementById('welcome-message');
+        if (welcomeMessage) {
+            welcomeMessage.textContent = `Hallo ${data.username}!`;
         }
     });
 
@@ -309,8 +312,7 @@ function logout() {
         socket.disconnect();
     }
     // Ansichtsmodi zurücksetzen
-    document.getElementById('buzzer-area').style.display = 'none';
-    document.getElementById('login-form').style.display = 'block';
+    window.location.href = '/login.html';
     document.getElementById('login-status').textContent = 'Erfolgreich abgemeldet.';
     token = null; // Wichtig: Auch die JavaScript-Variable zurücksetzen
 }
@@ -418,3 +420,14 @@ socket.on('questionProgressUpdate', (data) => {
         progressElement.style.display = 'none';
     }
 });
+
+if (document.getElementById('buzzer-area')) {
+    if (token) {
+        // Wenn ein Token vorhanden ist und wir auf der Spielerseite sind, Socket verbinden
+        connectSocket();
+    } else {
+        // Wenn kein Token vorhanden ist, aber wir versuchen, auf die Spielerseite zuzugreifen
+        alert('Nicht angemeldet. Weiterleitung zum Login.');
+        window.location.href = '/login.html'; // Oder '/index.html', je nachdem, wie Sie die Login-Seite nennen
+    }
+}

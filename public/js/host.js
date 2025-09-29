@@ -15,7 +15,7 @@ function logout() {
     if (socket) {
         socket.disconnect();
     }
-    window.location.href = '/';
+    window.location.href = '/login.html';
 }
 
 function updateScoreboard(scores) {
