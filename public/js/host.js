@@ -211,6 +211,7 @@ async function startQuiz() {
 
             displayQuestion(currentQuestionIndex);
             resetBuzzer();
+            sendQuestionProgress();
 
         } else {
             alert(`Fehler beim Laden des Quiz: ${quiz.message}`);
@@ -254,6 +255,7 @@ function nextQuestion() {
     currentQuestionIndex++;
     displayQuestion(currentQuestionIndex);
     resetBuzzer();
+    sendQuestionProgress();
     if (socket && socket.connected) {
         // Sendet das Event an den Server, der dann alle Clients informiert
         socket.emit('nextQuestion');
@@ -328,7 +330,7 @@ function connectSocket() {
         document.getElementById('buzzer-status').textContent = 'Buzzer ist frei.';
         document.getElementById('buzz-details').textContent = 'Warte auf den ersten Buzzer...';
         document.getElementById('answer-controls').style.display = 'none';
-        stopBuzzerTimer(); 
+        stopBuzzerTimer();
         //document.getElementById('answers-list').innerHTML = '';
     });
 
@@ -412,6 +414,20 @@ if (token) {
     // 3. Verbindung herstellen
     connectSocket();
     loadQuizzes(); // Lade Quizzes direkt nach dem Wiederherstellen
+}
+
+// NEUE FUNKTION: Sendet den aktuellen Fragenfortschritt an alle Spieler
+function sendQuestionProgress() {
+    // Annahme: 'currentQuiz' und 'currentQuestionIndex' sind globale Variablen in host.js
+    if (socket && socket.connected && currentQuiz) {
+        // Senden Sie den Fortschritt. Wir addieren +1 zu 'currentQuestionIndex', 
+        // da Indizes bei 0 beginnen, die Anzeige für den User aber bei 1.
+        socket.emit('questionProgressUpdate', {
+            currentQuestion: currentQuestionIndex + 1,
+            totalQuestions: currentQuiz.fragen.length
+        });
+        console.log(`Fragenfortschritt an Spieler gesendet: Frage ${currentQuestionIndex + 1} von ${currentQuiz.fragen.length}`);
+    }
 }
 
 function startBuzzerTimer() {
@@ -498,3 +514,15 @@ function endGame() {
     }
 }
 
+// NEUE FUNKTION: Sendet den aktuellen Fragenfortschritt an alle Spieler
+function sendQuestionProgress() {
+    // Stellen Sie sicher, dass currentQuiz geladen ist und der Socket verbunden ist
+    if (socket && socket.connected && currentQuiz && currentQuiz.questions) {
+        // currentQuestionIndex beginnt bei 0, die Anzeige beim User soll bei 1 beginnen.
+        socket.emit('questionProgressUpdate', {
+            currentQuestion: currentQuestionIndex + 1,
+            totalQuestions: currentQuiz.questions.length
+        });
+        console.log(`[HOST] Fragenfortschritt gesendet: Frage ${currentQuestionIndex + 1} von ${currentQuiz.questions.length}`);
+    }
+}

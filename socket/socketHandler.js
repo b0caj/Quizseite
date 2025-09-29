@@ -361,6 +361,13 @@ module.exports = (io) => {
             io.emit('buzzerReady');
         });
 
+        socket.on('questionProgressUpdate', (data) => {
+            // Verwende socket.broadcast.emit, um die Daten an ALLE ANDEREN
+            // verbundenen Clients (die Spieler) zu senden, aber nicht zurück an den Host (den Sender).
+            socket.broadcast.emit('questionProgressUpdate', data);
+            console.log(`[SERVER] Fortschritt gebroadcastet: Frage ${data.currentQuestion}/${data.totalQuestions}`);
+        });
+
         // ----------------------------------------------------
         // 6. HOST-STEUERUNG: Spieler bewerten/punkten
         // ----------------------------------------------------

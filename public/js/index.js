@@ -111,11 +111,6 @@ function connectSocket() {
             console.log(`❌ FALSCH gewertet! Punkte: ${data.points}`);
             playSound('wrong'); // <-- Löst den Sound aus
         });
-
-        // 3. Optional: Tabelle beim Spielende zurücksetzen (nur für index.html und host.html)
-        socket.on('gameEnded', () => {
-            updateScoreboard({}); // Leert die Tabelle
-        });
     }
 
     // Verbindung herstellen und das Token mitsenden
@@ -196,6 +191,19 @@ function connectSocket() {
         document.getElementById('buzzer-button').disabled = false;
         stopBuzzerTimer();
     });
+
+    socket.on('gameEnded', () => {
+        // Leert die Tabelle und setzt den Status zurück
+        updateScoreboard({});
+        document.getElementById('question-progress').style.display = 'none';
+        document.getElementById('buzzer-status').textContent = "Das Spiel ist beendet. Warten auf den Host...";
+    });
+
+    // 3. Optional: Tabelle beim Spielende zurücksetzen (nur für index.html und host.html)
+    //socket.on('gameEnded', () => {
+    // updateScoreboard({}); // Leert die Tabelle
+    // document.getElementById('question-progress').style.display = 'none';
+    //  });
 
     function updateBuzzerStatus(text) {
         document.getElementById('buzzer-status').textContent = text;
@@ -392,4 +400,21 @@ socket.on('buzzerReady', () => {
 
 socket.on('buzzerLocked', () => {
     document.getElementById('skip-controls').style.display = 'none';
+});
+
+
+// NEU: Listener für den Fragenfortschritt vom Host
+socket.on('questionProgressUpdate', (data) => {
+    const progressElement = document.getElementById('question-progress');
+    const currentDisplay = document.getElementById('current-question-display');
+    const totalDisplay = document.getElementById('total-questions-display');
+
+    if (data.currentQuestion && data.totalQuestions) {
+        currentDisplay.textContent = data.currentQuestion;
+        totalDisplay.textContent = data.totalQuestions;
+        // Anzeige einblenden, wenn die Daten verfügbar sind
+        progressElement.style.display = 'block';
+    } else {
+        progressElement.style.display = 'none';
+    }
 });
