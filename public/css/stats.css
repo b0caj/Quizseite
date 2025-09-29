@@ -1,18 +1,17 @@
-
 /* Bestenliste (stats.html) spezifische Anpassungen */
 .stats-header-container {
     display: flex;
     align-items: center;
-    gap: 20px;
-    padding: 20px 0 0 20px;
+    gap: var(--layout-gap);
+    padding: var(--layout-gap) 0 0 var(--layout-gap);
 }
 
 .leaderboard-card {
-    margin-top: 20px;
+    margin-top: var(--layout-gap);
 }
 
 .leaderboard-table thead th {
-    background-color: var(--secondary-accent);
+    background-color: var(--primary-color); 
     color: var(--background-color);
 }
 .leaderboard-table tbody td {
@@ -20,5 +19,5 @@
 }
 .leaderboard-table .rank {
     font-weight: 900;
-    color: var(--primary-color);
+    color: var(--secondary-accent); 
 }

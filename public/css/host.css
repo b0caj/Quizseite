@@ -1,77 +1,61 @@
-/* -----------------------------------
- * HOST-DASHBOARD LAYOUT (host.html)
- * ----------------------------------- */
-
+/* HOST-DASHBOARD LAYOUT (host.html) */
 .host-container.three-column-grid {
     display: grid;
-    grid-template-columns: 2.2fr 3.6fr 2.2fr;
-    gap: 30px;
-    padding: 20px;
-    /* WICHTIG: Minimale Höhe auf 100% des Viewports minus Header setzen */
-    min-height: calc(100vh - 80px);
-    align-items: start;
-    /* NEU: Wichtig, um die Höhenverwaltung der Spalten zu ermöglichen */
+    grid-template-columns: 2fr 3.5fr 2fr; 
+    gap: var(--layout-gap);
+    padding: var(--layout-gap);
+    min-height: calc(100vh - 80px); 
+    align-items: start; 
     height: 100%;
 }
 
 .right-column-container {
     display: flex;
     flex-direction: column;
-    gap: 30px;
-    /* NEU: Höhe auf 100% des Grid-Zellenraums setzen */
+    gap: var(--layout-gap);
     height: 100%;
 }
 
-/* -----------------------------------
- * LOGS & AKTIVITÄT
- * ----------------------------------- */
+/* LOGS & AKTIVITÄT */
 .log-area {
-    background-color: #0a0a0a;
-    color: var(--info-color);
-    border: 1px solid var(--info-color);
-    padding: 10px;
+    background-color: #050505; 
+    color: #4CAF50; 
+    border: 1px solid #1a1a1a;
+    padding: 15px;
     overflow-y: auto;
-    border-radius: 4px;
+    border-radius: 8px;
     font-family: 'Consolas', 'Monospace';
-    font-size: 0.85em;
-    height: 120px;
-    /* Standardhöhe für Logs */
+    font-size: 0.9em;
+    height: 150px; 
+    box-shadow: var(--shadow-inset);
 }
 
 .answers-log {
-    height: 200px;
+    height: 250px;
 }
 
-/* NEU: Scroll-Verwaltung für Log- und Tabellen-Container */
-.scrollable-content {
-    overflow-y: auto;
-    padding-bottom: 5px;
-}
-
-
-/* -----------------------------------
- * FRAGEN-DISPLAY (host.html)
- * ----------------------------------- */
+/* FRAGEN-DISPLAY (host.html) */
 .question-display-area {
-    background-color: #111111;
+    background-color: var(--card-background);
     border: 2px solid var(--primary-color);
-    padding: 25px;
+    padding: 40px; 
     border-radius: var(--border-radius);
     text-align: center;
-    box-shadow: var(--neon-glow-primary);
+    box-shadow: var(--primary-glow);
 }
 
 .question-text.big-text {
-    font-size: 1.5em;
-    font-weight: 800;
+    font-size: 2em; 
+    font-weight: 900;
     color: var(--text-color);
     margin: 20px 0;
 }
 
 .answer-text {
-    color: var(--secondary-accent);
-    font-weight: 600;
-    margin-top: 15px;
+    color: var(--secondary-accent); 
+    font-weight: 700;
+    font-size: 1.2em;
+    margin-top: 25px;
 }
 
 .winner-placeholder {
@@ -79,265 +63,54 @@
     font-weight: 700;
 }
 
-/* -----------------------------------
- * PUNKTESTAND (TABELLE)
- * ----------------------------------- */
-
-/* NEU: Score Card zur Flex-Struktur anpassen */
-.card.score-card {
-    flex-grow: 0;
-    /* Setzt flex-grow explizit auf 0 */
-    height: fit-content;
-    /* Passt die Höhe an den Inhalt an */
-    display: flex;
-    flex-direction: column;
-    min-height: 200px;
-}
-
-.styled-table-wrapper {
-    overflow-x: auto;
-    /* flex-grow: 1; ENTFERNT: Der Wrapper soll nicht mehr den gesamten Restplatz im Card einnehmen */
-    flex-grow: 0;
-
-    /* NEU: Ermöglicht internes Scrollen bei langer Spielerliste */
-    max-height: 450px;
-    /* Setzt eine maximale Höhe von 450px (kann angepasst werden) */
-    overflow-y: auto;
-    padding-right: 5px;
-}
-
-.styled-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 5px;
-}
-
-.styled-table thead th {
+/* KARTEN (KPIs - only used here) */
+.kpi-card-purple {
     background-color: var(--primary-color);
     color: var(--background-color);
-    padding: 12px 10px;
-    text-align: left;
-    font-weight: bold;
-    text-transform: uppercase;
+    border: none;
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+.kpi-card-green {
+    background-color: var(--secondary-accent);
+    color: var(--background-color);
+    border: none;
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
 }
 
-.styled-table thead th:first-child {
-    border-top-left-radius: 4px;
-}
 
-.styled-table thead th:last-child {
-    border-top-right-radius: 4px;
-}
-
-.styled-table tbody td {
-    padding: 12px 10px;
-    border-bottom: 1px solid #222;
-    background-color: #252525;
-}
-
-.styled-table tbody tr:hover td {
-    background-color: #303030;
-}
-
-.score-column {
-    text-align: right;
-    font-weight: bold;
-    color: var(--secondary-accent);
-}
-
-.player-name-col {
-    font-weight: 300;
-}
-
+/* RESPONSIVES DESIGN (Host-Grid specific) */
 @media (max-width: 1400px) {
     .host-container.three-column-grid {
-        grid-template-columns: 2.2fr 3.6fr 2.2sfr;
+        grid-template-columns: 2fr 3.5fr 2fr; 
     }
 }
 
 @media (max-width: 1024px) {
     .host-container.three-column-grid {
         grid-template-columns: 1fr 1fr;
+        gap: 20px;
     }
-
     .central-control-card {
-        grid-column: 1 / span 2;
+        grid-column: 1 / span 2; 
         order: 1;
     }
-
     .logs-card {
         order: 2;
-        /* Bei 2 Spalten wieder normale Höhenverwaltung (fit-content) */
         height: fit-content;
     }
-
     .right-column-container {
         order: 3;
-        /* Bei 2 Spalten wieder normale Höhenverwaltung */
         height: fit-content;
-    }
-
-    .auth-section {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .auth-card {
-        width: 90%;
-        max-width: none;
     }
 }
 
 @media (max-width: 768px) {
     .host-container.three-column-grid {
         grid-template-columns: 1fr;
-    }
-
-    .header {
-        flex-direction: column;
-        align-items: flex-start;
         padding: 15px;
     }
-
-    #auth-controls {
-        margin-top: 10px;
-    }
-}
-
-/* -----------------------------------
- * SKIP-ANFRAGEN (host.html)
- * ----------------------------------- */
-
-/* Grundstil für den gesamten Skip-Bereich */
-#skip-request-area {
-    /* Die Karte soll im Logs-Bereich bleiben, aber optisch hervorstechen */
-    border: 2px solid var(--secondary-text-color);
-    /* Neutraler Rahmen */
-    padding: 15px;
-    margin-bottom: 25px;
-    /* Etwas mehr Abstand zu den Logs */
-    transition: all 0.3s ease-in-out;
-}
-
-/* Stil für die Überschrift */
-#skip-request-area h3 {
-    display: flex;
-    align-items: center;
-    font-size: 1.1em;
-    font-weight: 700;
-    color: var(--text-color);
-}
-
-/* Stil für die Zählung (z.B. "3 Spieler möchten skippen.") */
-#skip-count {
-    font-size: 1em;
-    font-weight: 600;
-    color: var(--secondary-accent);
-    /* Hebt die Zahl hervor */
-    margin-top: 5px;
-    margin-bottom: 10px;
-}
-
-
-/* Leerer Listenstil */
-.simple-list {
-    list-style-type: none;
-    padding: 0;
-    margin: 5px 0 0 0;
-}
-
-/* Stil für jeden einzelnen Spieler in der Liste */
-#skip-players-list li {
-    background-color: #353535;
-    /* Leichter dunklerer Hintergrund */
-    padding: 5px 10px;
-    margin-bottom: 3px;
-    border-radius: 4px;
-    font-size: 0.9em;
-    color: var(--secondary-text-color);
-}
-
-/* -----------------------------------
- * VISUELLE BETONUNG BEI ANFRAGEN (NEON-EFFEKT)
- * ----------------------------------- */
-
-/* Fügen Sie diese CSS-Klasse im host.js-Code hinzu, WENN playerSkipRequests > 0 ist.
-   host.js: document.getElementById('skip-request-area').classList.add('skip-active');
-*/
-.skip-active {
-    /* Hervorhebung, wenn Skip-Wünsche vorhanden sind */
-    border-color: var(--danger-color);
-    /* Roter Rahmen für Alarm */
-    box-shadow: 0 0 10px rgba(198, 40, 40, 0.7);
-    /* Subtiler roter Glow */
-    background-color: #332828;
-    /* Leicht roter Hintergrund */
-}
-
-/* Hervorhebung des Titels, wenn aktiv */
-.skip-active h3 {
-    color: var(--danger-color);
-}
-
-/* Hervorhebung des Zählers, wenn aktiv */
-.skip-active #skip-count {
-    color: var(--danger-color);
-    font-size: 1.1em;
-    /* Macht die Zählermeldung etwas größer */
-}
-
-/* Container für die Skip-Anfragen */
-#skip-request-area {
-    /* Standard-Stil */
-    border: 1px solid #333;
-    transition: all 0.3s ease-in-out;
-}
-
-/* Großer Text für die Anzahl */
-#skip-count-display {
-    font-size: 1.8em;
-    font-weight: bold;
-    color: var(--danger-color);
-    /* Hebt die Zahl hervor */
-    margin: 10px 0;
-}
-
-/* Zustand, wenn Skip-Anfragen aktiv sind (muss per host.js zugewiesen werden) */
-.skip-active {
-    /* Nutzen Sie die 'danger'-Farbe für einen Warn-Effekt */
-    border: 2px solid var(--danger-color);
-    box-shadow: 0 0 10px var(--danger-color);
-    animation: pulse-danger 1.5s infinite alternate;
-}
-
-/* Pulsierende Animation für aktive Anfragen */
-@keyframes pulse-danger {
-    from {
-        box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
-    }
-
-    to {
-        box-shadow: 0 0 20px rgba(255, 0, 0, 1);
-    }
-}
-
-.timer-display {
-    text-align: center;
-    font-size: 7vw;
-    /* Sehr groß, um auf allen Geräten sichtbar zu sein */
-    font-weight: bold;
-    margin: 20px 0;
-    padding: 10px;
-    border: 4px solid var(--neon-red, #ff073a);
-    /* Rote Umrandung für Dringlichkeit */
-    border-radius: 10px;
-    background-color: rgba(0, 0, 0, 0.7);
-}
-
-/* Stil für die Countdown-Zahl selbst */
-#buzzer-timer {
-    color: var(--neon-red, #ff073a);
-    text-shadow: 0 0 10px var(--neon-red, #ff073a), 0 0 20px rgba(255, 0, 0, 0.5);
-    transition: color 0.3s ease-in-out;
-    /* Für den Flash-Effekt */
 }

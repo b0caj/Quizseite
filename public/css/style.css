@@ -1,62 +1,55 @@
-/* Globale Variablen (für style.css) */
+/* Globale Variablen */
 :root {
-    /* --- Allgemeine Dark Mode Farben (Sehr Schlicht) --- */
-    --background-color: #181818; /* Etwas weicherer dunkler Hintergrund */
-    --card-background: #282828; /* Dunklere Karten für besseren Kontrast */
-    --text-color: #EDEDED; /* Helles Weiß */
-    --secondary-text-color: #AAAAAA; /* Gedämpfter Sekundärtext */
+    /* --- CORE DESIGN 2025: Tiefer Dark Mode mit minimalem Hintergrund-Kontrast --- */
+    --background-color: #0F0F0F; 
+    --card-background: #1E1E1E; 
+    --text-color: #EAEAEA; 
+    --secondary-text-color: #8C8C8C; 
     
-    /* --- Akzentfarben (Monochromatisch: Nur Blau) --- */
-    /* Dieses Blau wird nun für Primary, Secondary-Accent, Info, etc. genutzt. */
-    --primary-color: #7539b4; /* Professionelles Blau (Hauptakzent) */
-    --secondary-accent: #7b00ff; /* Sekundärakzent ist GLEICH wie Primary */
-    --info-color: #663897; /* Info/Logs ist GLEICH wie Primary */
+    /* --- Akzentfarben (Vibrantes Lila und Neon-Grün/Gelb) --- */
+    --primary-color: #9C27B0; 
+    --secondary-accent: #CDDC39; 
+    --info-color: #9C27B0; 
 
-    /* --- Statusfarben (Funktionale Unterscheidung) --- */
-    --success-color: #388E3C; /* Dunkleres, schlichteres Grün (Erfolg) */
-    --danger-color: #C62828; /* Dunkleres, schlichteres Rot (Gefahr) */
+    /* --- Statusfarben --- */
+    --success-color: #388E3C; 
+    --danger-color: #C62828; 
     
     /* --- Effekte & Design --- */
-    --shadow: 0 4px 10px rgba(0, 0, 0, 0.8); /* Dezenter Schatten */
-    --neon-glow-primary: none; 
-    --neon-glow-accent: none; 
-    --border-radius: 8px;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.6); 
+    --shadow-inset: inset 0 0 10px rgba(0, 0, 0, 0.2); 
+    --primary-glow: 0 0 18px rgba(156, 39, 176, 0.4); 
+    --border-radius: 16px; 
+    --layout-gap: 30px; 
+    
+    /* --- NEUE TYPOGRAFIE --- */
+    --font-family-primary: 'Poppins', sans-serif;
 }
 
-/* -----------------------------------
- * GLOBALE NEON-EFFEKTE ENTFERNEN
- * ----------------------------------- */
+/* GOOGLE FONT IMPORTS */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&family=Montserrat:wght@300;500;700;900&family=Poppins:wght@300;500;700;900&display=swap');
 
-/* Entfernt den Neon-Glow von Buttons */
+
+/* GLOBALE EFFEKTE & BEREINIGEN */
 .neon-border, .glow {
-    box-shadow: none !important; /* Wichtig: Überschreibt alle vorhandenen Glows */
-    border: 1px solid var(--primary-color); /* Ersetzt Glow durch eine saubere, dünne Linie */
+    box-shadow: none !important; 
+    border: 1px solid var(--primary-color); 
+    transition: box-shadow 0.3s;
 }
 
-/* Entfernt den Glow vom Header */
+/* Header-Styling (Generisch) */
 .neon-header {
-    /* box-shadow: var(--neon-glow-primary); würde entfernt */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Schlichter, dezenter Schatten */
-    border-bottom: 3px solid var(--primary-color); /* Saubere Trennlinie */
+    box-shadow: var(--shadow); 
+    border-bottom: none; 
 }
 
-/* Entfernt Glow von der Divider-Linie */
-.neon-divider {
-    /* box-shadow: var(--neon-glow-accent); würde entfernt */
-    box-shadow: none; 
-    background-color: var(--secondary-text-color); /* Weniger auffällige Farbe */
-}
-
-/* Reduziert die Helligkeit des Headers-Textes */
 .header h1 {
     text-shadow: none; 
 }
 
-/* -----------------------------------
- * GRUNDSTYLING & TYPOGRAFIE
- * ----------------------------------- */
+/* GRUNDSTYLING & TYPOGRAFIE */
 body {
-    font-family: 'Roboto', 'Arial', sans-serif;
+    font-family: var(--font-family-primary); 
     background-color: var(--background-color);
     color: var(--text-color);
     margin: 0;
@@ -68,63 +61,94 @@ body {
 h1, h2, h3 {
     color: var(--text-color);
     margin-top: 0;
-    font-weight: 700;
+    font-weight: 900; 
+    letter-spacing: -0.5px;
 }
 
 h2.card-title {
-    border-bottom: 2px solid var(--secondary-accent);
-    padding-bottom: 5px;
+    border-bottom: none; 
+    padding-bottom: 0;
     margin-bottom: 15px;
+    font-weight: 700;
 }
 
 .neon-divider {
     border: 0;
     height: 1px;
-    background-image: linear-gradient(to right, rgba(255, 255, 255, 0), var(--primary-color), rgba(255, 255, 255, 0));
-    margin: 20px 0;
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), var(--secondary-text-color), rgba(0, 0, 0, 0));
+    margin: var(--layout-gap) 0; 
 }
 
 .content-container {
-    padding: 20px;
+    padding: var(--layout-gap); 
     max-width: 1600px;
     margin: 0 auto;
 }
 
+/* HEADER & AUTH (Login/Register) */
 .header {
-    background-color: #1e1e1e;
-    padding: 15px 30px;
+    background-color: #1a1a1a;
+    padding: 15px var(--layout-gap);
     display: flex;
     justify-content: space-between;
     align-items: center;
     box-shadow: var(--shadow);
 }
 
-.neon-header {
-    border-bottom: 3px solid var(--primary-color);
+.auth-section {
+    display: flex;
+    justify-content: center;
+    gap: var(--layout-gap);
+    margin: 10px 0 var(--layout-gap) 0;
 }
 
-.card {
+.auth-card {
     background-color: var(--card-background);
-    padding: 20px;
+    padding: 30px;
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
+    max-width: 400px; 
+    flex-grow: 1;
+    text-align: center;
+    border: none; 
+}
+
+.auth-card h2 {
+    font-size: 2.5em; 
+    line-height: 1.1;
+    font-weight: 800;
+    color: var(--text-color);
+}
+
+.register-card {
+    border: 1px solid var(--primary-color);
+    box-shadow: var(--shadow), 0 0 10px rgba(156, 39, 176, 0.2); 
+}
+
+/* KARTEN (CARDS) */
+.card {
+    background-color: var(--card-background);
+    padding: 30px; 
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-inset); 
+    border: none;
     height: fit-content; 
-    border: 1px solid #333;
-    transition: transform 0.3s ease-in-out;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s;
 }
 
 .card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow), var(--neon-glow-primary);
+    transform: translateY(-5px);
+    box-shadow: var(--shadow), var(--primary-glow);
 }
 
+/* INPUTS & BUTTONS */
 .input-field {
     width: 100%;
-    padding: 12px;
+    padding: 14px; 
     margin: 8px 0;
-    border: 1px solid #555;
-    border-radius: 4px;
-    background-color: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    border-radius: 8px; 
+    background-color: #121212; 
     color: var(--text-color);
     box-sizing: border-box;
     transition: border-color 0.3s, box-shadow 0.3s;
@@ -133,7 +157,7 @@ h2.card-title {
 .input-field:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 5px var(--primary-color);
+    box-shadow: 0 0 8px rgba(156, 39, 176, 0.7);
 }
 
 .neon-border {
@@ -141,9 +165,9 @@ h2.card-title {
 }
 
 .button {
-    padding: 10px 15px;
+    padding: 12px 20px;
     border: none;
-    border-radius: 4px;
+    border-radius: 8px; 
     cursor: pointer;
     font-weight: bold;
     transition: background-color 0.3s, transform 0.1s, box-shadow 0.3s;
@@ -154,51 +178,120 @@ h2.card-title {
 }
 
 .button:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
     box-shadow: none;
 }
 
-.button.primary {
-    background-color: var(--primary-color);
-    color: var(--background-color); 
-}
-
-.button.secondary {
-    background-color: var(--secondary-text-color); 
-    color: var(--background-color);
-}
-.button.secondary-accent {
-    background-color: var(--secondary-accent);
-    color: var(--background-color);
-}
+.button.primary { background-color: var(--primary-color); color: var(--background-color); }
+.button.secondary { background-color: var(--secondary-accent); color: var(--background-color); }
+.button.secondary-accent { background-color: var(--secondary-accent); color: var(--background-color); }
 .button.success { background-color: var(--success-color); color: var(--background-color); }
 .button.danger { background-color: var(--danger-color); color: var(--background-color); }
 .button.info { background-color: var(--info-color); color: var(--background-color); }
 
-.button.glow:not(:disabled):hover {
-    transform: translateY(-2px);
-    box-shadow: var(--neon-glow-primary);
+.button:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.button.primary:not(:disabled):hover {
+    box-shadow: 0 0 15px rgba(156, 39, 176, 0.5);
 }
 
 .button-group {
     display: flex;
-    gap: 10px;
-    margin-top: 10px;
+    gap: 15px;
+    margin-top: 15px;
     flex-wrap: wrap;
 }
 
-/* NEU: Container für Willkommen und Logout-Buttons */
-.game-top-bar {
+/* PUNKTESTAND (TABELLE) */
+.card.score-card {
+    flex-grow: 0;
+    height: fit-content;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 5px;
-    padding: 0 10px;
+    flex-direction: column;
+    min-height: 200px; 
 }
 
-#welcome-message {
-    margin: 0;
-    font-size: 1.5em; /* Macht die Willkommensnachricht etwas kleiner */
-    color: var(--primary-color);
+.styled-table-wrapper {
+    overflow-x: auto;
+    flex-grow: 0;
+    max-height: 450px; 
+    overflow-y: auto;
+    padding-right: 5px; 
+}
+
+.styled-table {
+    width: 100%;
+    border-collapse: separate; 
+    border-spacing: 0 10px; 
+}
+
+.styled-table thead th {
+    background-color: var(--card-background); 
+    color: var(--secondary-text-color);
+    padding: 12px 10px;
+    text-align: left;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.styled-table thead th:first-child { border-top-left-radius: 0; }
+.styled-table thead th:last-child { border-top-right-radius: 0; }
+
+.styled-table tbody td {
+    padding: 15px 10px; 
+    border-bottom: none;
+    background-color: #222222; 
+    border-radius: 8px; 
+}
+
+.styled-table tbody tr:hover td {
+    background-color: #303030;
+}
+
+.score-column {
+    text-align: right;
+    font-weight: 900; 
+    color: var(--secondary-accent); 
+}
+
+.player-name-col {
+    font-weight: 500;
+}
+
+.scrollable-content {
+    overflow-y: auto;
+    padding-bottom: 5px; 
+}
+
+
+/* RESPONSIVES DESIGN (Global relevant parts only) */
+@media (max-width: 1024px) {
+    .auth-section {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+    .auth-card {
+        width: 90%;
+        max-width: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .content-container {
+        padding: 15px;
+    }
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px;
+    }
+    #auth-controls {
+        margin-top: 10px;
+    }
 }

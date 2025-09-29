@@ -1,37 +1,15 @@
-.auth-section {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin: 10px 0 20px 0;
-}
-
-.auth-card {
-    background-color: var(--card-background);
-    padding: 30px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    max-width: 350px;
-    flex-grow: 1;
-    text-align: center;
-    border: 1px solid #333;
-}
-
-.register-card {
-    border-left: 3px solid var(--secondary-accent);
-}
-
+/* SPIELER-BUZZER-BEREICH (index.html) */
 .player-header {
     text-align: center;
     padding: 10x 20px;
-    background: linear-gradient(135deg, #181818, #0a0a0a);
-    border-bottom: 3px solid var(--secondary-accent);
+    background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
+    border-bottom: 2px solid var(--primary-color); 
 }
 
 .buzzer-section {
-    max-width: 1400px;
-    /* Erhöhe die maximale Breite, um Platz für 3 Spalten zu schaffen */
-    margin: 0 auto;
-    padding: 20px;
+    max-width: 1000px; 
+    margin: 0 auto; 
+    padding: var(--layout-gap); 
     flex-grow: 1;
 }
 
@@ -42,267 +20,98 @@
     margin-bottom: 5px;
 }
 
-/* Entfernt die alte Zentrierung im .buzzer-container, da der Buzzer jetzt im Flex-Container ist */
 .buzzer-container {
-    margin: 0;
-    max-width: none;
-    display: flex;
-    /* NEU: Macht den Container selbst zum Flex-Container */
-    flex-direction: column;
-    align-items: center;
-    /* Zentriert den Buzzer und den Status im Container */
+    margin: 0; 
+    max-width: none; 
 }
 
-#buzzer-button {
-    /* Setzt eine feste Höhe und Breite für eine große Klickfläche */
-    width: 100%;
-    min-height: 250px;
-    /* Erhöht die Höhe deutlich */
-    height: auto;
-
-    /* Erhöht den Innenabstand für mehr Platz um den Text */
-    padding: 30px 20px;
-
-    font-size: 40px;
-    /* Standard-Schriftgröße für den Buzzer-Text */
+.buzzer-button {
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    font-size: 3.5em; 
     font-weight: 900;
-    text-transform: uppercase;
-
-    /* Stellt sicher, dass der Text nicht überläuft */
-    word-wrap: break-word;
-    white-space: normal;
-
-    /* Flex-Container, um den Text optimal zu zentrieren */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    line-height: 1.1;
-    /* Einzeiligen Text ein wenig straffen */
-
-    /* Neon-Stil beibehalten */
-    border-radius: var(--border-radius-large, 15px);
-    box-shadow: 0 0 20px var(--primary-color);
+    cursor: pointer;
+    border: 5px solid var(--primary-color);
+    transition: transform 0.1s, box-shadow 0.2s, background-color 0.2s, border-color 0.2s;
 }
 
 .buzzer-button:not(:disabled):hover {
     background-color: #a36cfc;
-    box-shadow: var(--neon-glow-primary);
+    box-shadow: 0 0 30px rgba(156, 39, 176, 0.7); 
 }
 
 .buzzer-button:not(:disabled):active {
     transform: scale(0.95);
-    box-shadow: 0 0 5px var(--primary-color);
+    border-color: #ffffff; 
 }
 
 .buzzer-button:disabled {
-    background-color: #333;
-    color: #888;
-    border-color: #555;
+    background-color: #222;
+    color: #555;
+    border-color: #333;
     cursor: not-allowed;
     box-shadow: none;
 }
 
-/* Stellt sicher, dass die Antwort-Eingabe die volle Spaltenbreite nutzt und zentriert ist */
 .answer-submission-area {
-    margin-left: auto;
-    margin-right: auto;
-    width: 100%;
-    max-width: 400px;
-    /* Reduziert die max-width für eine bessere Ausrichtung mit dem Buzzer */
+    display: flex;
+    gap: 10px;
+    max-width: 600px;
+    margin: 20px auto 40px;
 }
 
 .status-message.huge-status {
-    font-size: 1.3em;
-    font-weight: 400;
+    font-size: 1.5em;
+    font-weight: 600;
     margin-top: 10px;
-    color: var(--info-color);
+    color: var(--primary-color); 
 }
 
 .player-game-layout {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    /* Buzzer-Spalte ist doppelt so breit */
-    gap: 30px;
-    max-width: 1000px;
-    /* Begrenzt die maximale Breite des Spiel-Layouts */
-    margin: 40px auto 0 auto;
-    align-items: start;
-    /* Richtet die Inhalte am oberen Rand aus */
+    gap: var(--layout-gap);
+    max-width: 1000px; 
+    margin: var(--layout-gap) auto 0 auto;
+    align-items: start; 
 }
 
 .buzzer-area-left {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    /* Zentriert Buzzer und Antwort-Eingabe */
-    gap: 20px;
-    /* Fügt Abstand zwischen den Elementen in der linken Spalte hinzu */
+    align-items: center; 
 }
 
-/* Entfernt die alte Zentrierung, da der Buzzer jetzt im Flex-Container ist */
-.buzzer-container {
-    margin: 0;
-    max-width: none;
-}
-
-/* Sorgt dafür, dass die Antwort-Eingabe die volle Spaltenbreite nutzt */
 .answer-submission-area {
     margin-left: auto;
     margin-right: auto;
-    width: 100%;
+    width: 100%; 
     max-width: 600px;
 }
 
-/* NEU: Score Card zur Flex-Struktur anpassen */
-.card.score-card {
-    flex-grow: 0;
-    /* Setzt flex-grow explizit auf 0 */
-    height: fit-content;
-    /* Passt die Höhe an den Inhalt an */
+.player-score-card {
+    min-height: 400px; 
+}
+
+.game-top-bar {
     display: flex;
-    flex-direction: column;
-    min-height: 200px;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 0 10px;
 }
 
-.styled-table-wrapper {
-    overflow-x: auto;
-    /* flex-grow: 1; ENTFERNT: Der Wrapper soll nicht mehr den gesamten Restplatz im Card einnehmen */
-    flex-grow: 0;
-
-    /* NEU: Ermöglicht internes Scrollen bei langer Spielerliste */
-    max-height: 450px;
-    /* Setzt eine maximale Höhe von 450px (kann angepasst werden) */
-    overflow-y: auto;
-    padding-right: 5px;
+#welcome-message {
+    margin: 0;
+    font-size: 1.5em; 
+    color: var(--secondary-text-color); 
 }
 
-.styled-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 5px;
-}
-
-.styled-table thead th {
-    background-color: var(--primary-color);
-    color: var(--background-color);
-    padding: 12px 10px;
-    text-align: left;
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-.styled-table thead th:first-child {
-    border-top-left-radius: 4px;
-}
-
-.styled-table thead th:last-child {
-    border-top-right-radius: 4px;
-}
-
-.styled-table tbody td {
-    padding: 12px 10px;
-    border-bottom: 1px solid #222;
-    background-color: #252525;
-}
-
-.styled-table tbody tr:hover td {
-    background-color: #303030;
-}
-
-.score-column {
-    text-align: right;
-    font-weight: bold;
-    color: var(--secondary-accent);
-}
-
-.player-name-col {
-    font-weight: 300;
-}
-
-/* Responsives Design: Auf kleinen Bildschirmen wieder untereinander */
-@media (max-width: 850px) {
+@media (max-width: 1024px) {
     .player-game-layout {
-        grid-template-columns: 1fr;
-        /* Zurück zu einer Spalte */
         gap: 20px;
     }
-
-    /* Buzzer oben, Scoreboard unten auf Mobile */
-    .player-score-card {
-        order: 2;
-    }
-
-    .buzzer-area-left {
-        order: 1;
-    }
-}
-
-.skip-button-style {
-    /* Verwenden Sie die Sekundärfarbe für visuelle Unterscheidung */
-    background-color: var(--secondary-accent);
-    color: var(--background-color);
-    border: 2px solid var(--secondary-accent);
-    box-shadow: 0 0 5px var(--secondary-accent);
-    transition: all 0.2s ease-in-out;
-    font-weight: bold;
-    text-transform: uppercase;
-    padding: 12px 20px;
-    margin-top: 10px;
-    width: 100%;
-    /* Button füllt den kleinen Container aus */
-}
-
-.skip-button-style:hover:not(:disabled) {
-    /* Neon-Outline beim Hover */
-    background-color: transparent;
-    color: var(--secondary-accent);
-    box-shadow: 0 0 15px var(--secondary-accent);
-}
-
-/* Stil, wenn der Button deaktiviert ist (nach dem Senden der Anfrage) */
-.skip-button-style:disabled {
-    background-color: #555;
-    color: #999;
-    border-color: #555;
-    box-shadow: none;
-    cursor: not-allowed;
-    /* Der Text "Anfrage gesendet! 👍" bleibt sichtbar, aber der Button ist gedimmt */
-}
-
-/* Etwas Stil für den kleinen Skip-Container */
-.small-card.action-card {
-    /* Hebt den Container mit der Sekundärfarbe hervor */
-    border-left: 3px solid var(--secondary-accent);
-    padding: 15px;
-}
-
-/* Positioniert die Skip-Controls nun direkt über dem Buzzer/Eingabebereich */
-#skip-controls {
-    width: 100%;
-    /* Sorgt dafür, dass es die volle Breite der linken Spalte nutzt */
-    max-width: 400px;
-    /* Begrenzt es wie den Buzzer */
-    margin-top: 0;
-    /* Entfernt unnötigen oberen Rand, falls vorhanden */
-}
-
-.timer-display {
-    text-align: center;
-    font-size: 7vw;
-    /* Sehr groß, um auf allen Geräten sichtbar zu sein */
-    font-weight: bold;
-    margin: 20px 0;
-    padding: 10px;
-    border: 4px solid var(--neon-red, #ff073a);
-    /* Rote Umrandung für Dringlichkeit */
-    border-radius: 10px;
-    background-color: rgba(0, 0, 0, 0.7);
-}
-
-/* Stil für die Countdown-Zahl selbst */
-#buzzer-timer {
-    color: var(--neon-red, #ff073a);
-    text-shadow: 0 0 10px var(--neon-red, #ff073a), 0 0 20px rgba(255, 0, 0, 0.5);
-    transition: color 0.3s ease-in-out;
-    /* Für den Flash-Effekt */
 }
