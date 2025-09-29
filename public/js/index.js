@@ -81,33 +81,6 @@ function connectSocket() {
     if (!token) {
         document.getElementById('login-status').textContent = 'Fehler: Kein Token vorhanden.';
         return;
-
-
-        socket = io('/buzzer', { query: { token } });
-
-
-        // 1. NEU: Empfängt den gesamten Punktestand beim Verbinden
-        socket.on('initialScores', (scores) => {
-            updateScoreboard(scores);
-        });
-
-        // 2. NEU: Empfängt den aktualisierten Punktestand nach jeder Punktevergabe
-        socket.on('currentScoreUpdate', (scores) => {
-            updateScoreboard(scores);
-        });
-
-        socket.on('correctAnswer', (data) => {
-            // Console-Ausgabe zur Bestätigung
-            console.log(`✅ KORREKT gewertet! Punkte: ${data.points}`);
-            playSound('correct'); // <-- Löst den Sound aus
-        });
-
-        // NEU: Spieler hört, wenn die Antwort als FALSCH gewertet wird
-        socket.on('wrongAnswer', (data) => {
-            // Console-Ausgabe zur Bestätigung
-            console.log(`❌ FALSCH gewertet! Punkte: ${data.points}`);
-            playSound('wrong'); // <-- Löst den Sound aus
-        });
     }
 
     // Verbindung herstellen und das Token mitsenden
@@ -368,14 +341,31 @@ document.addEventListener('keydown', function (event) {
     }
 });
 
-if (token) {
-    // 1. Zuerst die Formulare ausblenden, falls sie sichtbar sind
-    document.getElementById('login-form').style.display = 'none';
-    document.getElementById('register-area').style.display = 'none';
+const isPlayerPage = document.getElementById('buzzer-area') !== null;
+const isLoginPage = document.getElementById('login-form') !== null;
 
-    // 2. Verbindung herstellen
-    connectSocket();
+if (token) {
+    if (isPlayerPage) {
+        // 1. Wenn ein Token vorhanden ist und wir auf der Spielerseite sind: Socket verbinden
+        connectSocket();
+        
+        // Formulare ausblenden (wird auf player.html ignoriert, da sie fehlen)
+        if (document.getElementById('login-form')) document.getElementById('login-form').style.display = 'none';
+        if (document.getElementById('register-area')) document.getElementById('register-area').style.display = 'none';
+        
+    } else if (isLoginPage) {
+        // 2. Wenn ein Token vorhanden ist, aber wir auf der login.html sind: 
+        // Direkt zur Spielerseite weiterleiten
+        window.location.href = '/player.html';
+    }
+} else {
+    // 3. Wenn kein Token vorhanden ist und wir auf der Spielerseite sind: 
+    // Zur Login-Seite zurückleiten (Sicherheitsmaßnahme)
+    if (isPlayerPage) {
+        window.location.href = '/login.html';
+    }
 }
+
 
 function requestSkip() {
     if (socket && socket.connected) {
