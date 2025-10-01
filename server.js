@@ -48,7 +48,7 @@ app.use('/api/quiz', quizRoutes); // NEU: Quiz-Routen
 
 // Basis-Route (Für index.html)
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 

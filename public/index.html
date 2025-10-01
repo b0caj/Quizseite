@@ -16,7 +16,28 @@
 
     <main class="content-container">
 
-        <section id="buzzer-area" class="buzzer-section"> <div class="game-top-bar">
+        <section id="auth-section" class="auth-section">
+            <div id="login-form" class="auth-card">
+                <h2>Buzzerraum Login</h2>
+                <input type="text" id="username" placeholder="Benutzername" class="input-field neon-border"><br>
+                <input type="password" id="password" placeholder="Passwort" class="input-field neon-border"><br>
+                <button onclick="handleLogin()" class="button primary glow">Login</button>
+                <p id="login-status" class="status-message"></p>
+            </div>
+
+            <div id="register-area" class="auth-card register-card">
+                <h3>Noch kein Konto?</h3>
+                <input type="text" id="reg-username" placeholder="Neuer Benutzername"
+                    class="input-field neon-border"><br>
+                <input type="password" id="reg-password" placeholder="Passwort" class="input-field neon-border"><br>
+                <button onclick="handleRegister()" class="button secondary-accent glow">Registrieren</button>
+                <p id="register-status" class="status-message"></p>
+            </div>
+        </section>
+
+        <section id="buzzer-area" class="buzzer-section" style="display:none;">
+
+            <div class="game-top-bar">
                 <h2 id="welcome-message">Willkommen! </h2>
                 <div class="top-controls">
                     <a href="/stats.html" class="button info small-button">Zur Ewigen Bestenliste</a>
@@ -25,6 +46,9 @@
             </div>
 
             <div class="player-game-layout">
+
+
+
                 <div class="buzzer-area-left">
                     <div class="buzzer-container">
                         <p id="question-progress" class="status-message"
@@ -76,7 +100,7 @@
     </main>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/js/index.js"></script> 
+    <script src="/js/index.js"></script>
 </body>
 
 </html>
