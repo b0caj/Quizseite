@@ -1,7 +1,7 @@
 /* HOST-DASHBOARD LAYOUT (host.html) */
 .host-container.three-column-grid {
     display: grid;
-    grid-template-columns: 2fr 3.5fr 2fr; 
+    grid-template-columns: 1.5fr 3fr 1.5fr; /* Linke und rechte Spalte schmaler */
     gap: var(--layout-gap);
     padding: var(--layout-gap);
     min-height: calc(100vh - 80px); 
@@ -14,75 +14,134 @@
     flex-direction: column;
     gap: var(--layout-gap);
     height: 100%;
+    position: sticky; /* Rechte Spalte klebt oben */
+    top: var(--layout-gap);
 }
 
 /* LOGS & AKTIVITÄT */
+.logs-card {
+    border: 1px solid var(--secondary-accent); /* Logs-Spalte mit Neon-Akzent */
+    box-shadow: 0 0 15px rgba(39, 255, 178, 0.3);
+}
+
 .log-area {
     background-color: #050505; 
-    color: #4CAF50; 
+    color: var(--secondary-accent); /* Logs in Neon-Akzentfarbe */
     border: 1px solid #1a1a1a;
     padding: 15px;
     overflow-y: auto;
     border-radius: 8px;
     font-family: 'Consolas', 'Monospace';
     font-size: 0.9em;
-    height: 150px; 
+    height: 120px; /* Etwas kleiner */
     box-shadow: var(--shadow-inset);
 }
 
 .answers-log {
-    height: 250px;
+    height: 200px;
+}
+
+#skip-display {
+    background-color: #201026; /* Dunkler Hintergrund für Skip-Info */
+    border: 1px solid var(--primary-color);
+    margin-bottom: var(--layout-gap);
+    text-align: center;
+    padding: 15px;
+}
+
+#skip-count {
+    font-size: 3em;
+    color: var(--danger-color); /* Danger-Farbe für Aufmerksamkeit */
+    text-shadow: 0 0 8px rgba(255, 82, 82, 0.8);
 }
 
 /* FRAGEN-DISPLAY (host.html) */
 .question-display-area {
     background-color: var(--card-background);
-    border: 2px solid var(--primary-color);
+    border: 3px solid var(--primary-color); /* Dickerer Rahmen für zentrale Steuerung */
     padding: 40px; 
     border-radius: var(--border-radius);
     text-align: center;
     box-shadow: var(--primary-glow);
 }
 
+.question-index {
+    color: var(--secondary-accent);
+    font-size: 1.2em;
+    font-weight: 700;
+}
+
 .question-text.big-text {
-    font-size: 2em; 
+    font-size: 2.2em; 
     font-weight: 900;
     color: var(--text-color);
     margin: 20px 0;
+    line-height: 1.3;
 }
 
-.answer-text {
-    color: var(--secondary-accent); 
-    font-weight: 700;
-    font-size: 1.2em;
+.answer-display-area {
+    background-color: #000;
+    border: 1px solid #333;
+    padding: 15px;
+    border-radius: 8px;
     margin-top: 25px;
 }
 
-.winner-placeholder {
-    font-size: 1.5em;
+.answer-text {
+    color: var(--info-color); /* Antwort in Info-Farbe */
     font-weight: 700;
+    font-size: 1.3em;
+    margin-top: 0;
+    text-shadow: 0 0 5px rgba(51, 196, 255, 0.5);
 }
 
-/* KARTEN (KPIs - only used here) */
-.kpi-card-purple {
-    background-color: var(--primary-color);
-    color: var(--background-color);
-    border: none;
-    padding: 30px;
+/* Buzzer Status & Controls */
+.buzzer-controls-group {
+    text-align: center;
+}
+
+.buzzer-controls-group #buzzer-status {
+    font-size: 2.5em;
+    color: var(--secondary-accent);
+    text-shadow: 0 0 10px rgba(39, 255, 178, 0.8);
+}
+
+.winner-placeholder {
+    font-size: 1.8em;
+    font-weight: 900;
+}
+
+/* WBM Controls Area */
+#wbmControlsArea {
+    background-color: #121212;
+    padding: 25px;
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-}
-.kpi-card-green {
-    background-color: var(--secondary-accent);
-    color: var(--background-color);
-    border: none;
-    padding: 30px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
+    border: 2px solid var(--info-color); /* WBM-Bereich in Info-Farbe */
+    box-shadow: 0 0 15px rgba(51, 196, 255, 0.6);
+    /*grid-column: 1 / span 2; /* WBM nimmt volle Breite in der Mitte */
+    display: grid;
+    /*grid-template-columns: 1fr 1fr;*/
+    gap: var(--layout-gap);
 }
 
+#wbmControlsArea .controls-group {
+    border: 1px dashed #333;
+    padding: 15px;
+    border-radius: 8px;
+}
 
-/* RESPONSIVES DESIGN (Host-Grid specific) */
+#wbmControlsArea h3 {
+    color: var(--info-color);
+    border-bottom: 1px solid var(--info-color);
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+#wbmScoringArea {
+    grid-column: 1 / span 2; /* Scoring in eigener Zeile */
+}
+
+/* Responsive Anpassungen (Host) */
 @media (max-width: 1400px) {
     .host-container.three-column-grid {
         grid-template-columns: 2fr 3.5fr 2fr; 
@@ -94,17 +153,25 @@
         grid-template-columns: 1fr 1fr;
         gap: 20px;
     }
-    .central-control-card {
-        grid-column: 1 / span 2; 
-        order: 1;
+    .right-column-container {
+        grid-column: 1 / span 2;
+        order: 3;
+        position: static;
     }
     .logs-card {
         order: 2;
         height: fit-content;
     }
-    .right-column-container {
-        order: 3;
-        height: fit-content;
+    .central-control-card {
+        grid-column: 1 / span 2; 
+        order: 1;
+    }
+    #wbmControlsArea {
+        grid-template-columns: 1fr;
+        grid-column: 1 / span 2;
+    }
+    #wbmScoringArea {
+        grid-column: 1 / span 1;
     }
 }
 
@@ -112,5 +179,14 @@
     .host-container.three-column-grid {
         grid-template-columns: 1fr;
         padding: 15px;
+    }
+    .central-control-card {
+        grid-column: 1;
+    }
+    .logs-card {
+        grid-column: 1;
+    }
+    .right-column-container {
+        grid-column: 1;
     }
 }

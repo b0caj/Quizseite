@@ -1,26 +1,27 @@
 /* Globale Variablen */
 :root {
     /* --- CORE DESIGN 2025: Tiefer Dark Mode mit minimalem Hintergrund-Kontrast --- */
-    --background-color: #0F0F0F; 
-    --card-background: #1E1E1E; 
+    --background-color: #080808; /* Noch dunklerer Hintergrund */
+    --card-background: #181818; /* Dunkle, aber abgesetzte Karten */
     --text-color: #EAEAEA; 
-    --secondary-text-color: #8C8C8C; 
+    --secondary-text-color: #909090; /* Helleres Grau für Sekundärtexte */
     
     /* --- Akzentfarben (Vibrantes Lila und Neon-Grün/Gelb) --- */
-    --primary-color: #9C27B0; 
-    --secondary-accent: #CDDC39; 
-    --info-color: #9C27B0; 
+    --primary-color: #A347FF; /* Ein lebhafteres, leuchtenderes Lila/Violett */
+    --secondary-accent: #27FFB2; /* Ein knalliges, kühles Neon-Cyan/Grün */
+    --info-color: #33C4FF; /* Blau für Info/Aktion */
 
     /* --- Statusfarben --- */
-    --success-color: #388E3C; 
-    --danger-color: #C62828; 
+    --success-color: #4CAF50; /* Klassisches Grün für Korrekt */
+    --danger-color: #FF5252; /* Kräftiges Rot für Falsch */
     
     /* --- Effekte & Design --- */
-    --shadow: 0 10px 30px rgba(0, 0, 0, 0.6); 
-    --shadow-inset: inset 0 0 10px rgba(0, 0, 0, 0.2); 
-    --primary-glow: 0 0 18px rgba(156, 39, 176, 0.4); 
-    --border-radius: 16px; 
-    --layout-gap: 30px; 
+    --shadow: 0 10px 40px rgba(0, 0, 0, 0.7); /* Stärkerer Schatten */
+    --shadow-inset: inset 0 0 15px rgba(0, 0, 0, 0.4); 
+    --primary-glow: 0 0 25px 5px rgba(163, 71, 255, 0.6); /* Intensiver Primary-Glow */
+    --secondary-glow: 0 0 20px 3px rgba(39, 255, 178, 0.6); /* Intensiver Secondary-Glow */
+    --border-radius: 12px; /* Etwas runder */
+    --layout-gap: 25px; /* Etwas weniger Abstand */
     
     /* --- NEUE TYPOGRAFIE --- */
     --font-family-primary: 'Poppins', sans-serif;
@@ -31,20 +32,35 @@
 
 
 /* GLOBALE EFFEKTE & BEREINIGEN */
-.neon-border, .glow {
-    box-shadow: none !important; 
-    border: 1px solid var(--primary-color); 
-    transition: box-shadow 0.3s;
+.neon-border {
+    border: 2px solid var(--primary-color) !important; /* Dickerer Neon-Rand */
+    box-shadow: 0 0 8px rgba(163, 71, 255, 0.4);
+    transition: box-shadow 0.3s, border-color 0.3s;
+}
+
+.glow {
+    box-shadow: var(--primary-glow);
+}
+
+.glow:hover {
+    box-shadow: var(--primary-glow), var(--shadow);
+}
+
+.neon-text-highlight {
+    color: var(--secondary-accent);
+    text-shadow: 0 0 8px rgba(39, 255, 178, 0.6);
 }
 
 /* Header-Styling (Generisch) */
 .neon-header {
+    background-color: #121212;
     box-shadow: var(--shadow); 
-    border-bottom: none; 
+    border-bottom: 2px solid var(--primary-color); 
 }
 
 .header h1 {
-    text-shadow: none; 
+    text-shadow: 0 0 10px rgba(163, 71, 255, 0.7); /* Glow zum Titel */
+    letter-spacing: 1px;
 }
 
 /* GRUNDSTYLING & TYPOGRAFIE */
@@ -61,15 +77,13 @@ body {
 h1, h2, h3 {
     color: var(--text-color);
     margin-top: 0;
-    font-weight: 900; 
-    letter-spacing: -0.5px;
+    font-weight: 800; /* Etwas weniger fett für bessere Lesbarkeit */
+    letter-spacing: 0;
 }
 
 h2.card-title {
-    border-bottom: none; 
-    padding-bottom: 0;
-    margin-bottom: 15px;
     font-weight: 700;
+    color: var(--primary-color); /* Titel in Akzentfarbe */
 }
 
 .neon-divider {
@@ -81,13 +95,13 @@ h2.card-title {
 
 .content-container {
     padding: var(--layout-gap); 
-    max-width: 1600px;
+    max-width: 1400px; /* etwas schmaler */
     margin: 0 auto;
 }
 
 /* HEADER & AUTH (Login/Register) */
 .header {
-    background-color: #1a1a1a;
+    background-color: #121212;
     padding: 15px var(--layout-gap);
     display: flex;
     justify-content: space-between;
@@ -107,22 +121,22 @@ h2.card-title {
     padding: 30px;
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
-    max-width: 400px; 
+    max-width: 450px; 
     flex-grow: 1;
     text-align: center;
     border: none; 
 }
 
 .auth-card h2 {
-    font-size: 2.5em; 
+    font-size: 2em; /* Etwas kleiner */
     line-height: 1.1;
     font-weight: 800;
-    color: var(--text-color);
+    color: var(--primary-color);
 }
 
 .register-card {
-    border: 1px solid var(--primary-color);
-    box-shadow: var(--shadow), 0 0 10px rgba(156, 39, 176, 0.2); 
+    border: 2px solid var(--secondary-accent); /* Register in Secondary-Akzent */
+    box-shadow: var(--shadow), 0 0 10px rgba(39, 255, 178, 0.2); 
 }
 
 /* KARTEN (CARDS) */
@@ -130,15 +144,15 @@ h2.card-title {
     background-color: var(--card-background);
     padding: 30px; 
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow-inset); 
-    border: none;
+    box-shadow: var(--shadow); /* Generelle Karten haben jetzt einen Außen- statt Innen-Schatten */
+    border: 1px solid #333; /* Dezenter Rand */
     height: fit-content; 
     transition: transform 0.3s ease-in-out, box-shadow 0.3s;
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow), var(--primary-glow);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow), 0 0 15px rgba(24, 24, 24, 0.9);
 }
 
 /* INPUTS & BUTTONS */
@@ -146,7 +160,7 @@ h2.card-title {
     width: 100%;
     padding: 14px; 
     margin: 8px 0;
-    border: 1px solid #3a3a3a;
+    border: 1px solid #333; /* Dunklerer Standardrand */
     border-radius: 8px; 
     background-color: #121212; 
     color: var(--text-color);
@@ -157,28 +171,26 @@ h2.card-title {
 .input-field:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 8px rgba(156, 39, 176, 0.7);
+    box-shadow: 0 0 12px rgba(163, 71, 255, 0.7);
 }
 
-.neon-border {
-    border: 1px solid var(--primary-color);
-}
 
 .button {
     padding: 12px 20px;
     border: none;
     border-radius: 8px; 
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 700; /* Etwas dickerer Text */
     transition: background-color 0.3s, transform 0.1s, box-shadow 0.3s;
     text-decoration: none;
     display: inline-block;
     letter-spacing: 0.5px;
     text-transform: uppercase;
+    border: 1px solid transparent;
 }
 
 .button:disabled {
-    opacity: 0.4;
+    opacity: 0.3;
     cursor: not-allowed;
     box-shadow: none;
 }
@@ -190,14 +202,24 @@ h2.card-title {
 .button.danger { background-color: var(--danger-color); color: var(--background-color); }
 .button.info { background-color: var(--info-color); color: var(--background-color); }
 
+.button.secondary-accent.glow {
+    box-shadow: var(--secondary-glow);
+}
+
+.button.secondary-accent.glow:hover {
+    box-shadow: var(--secondary-glow), var(--shadow);
+}
+
+
 .button:not(:disabled):hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
 }
 
 .button.primary:not(:disabled):hover {
-    box-shadow: 0 0 15px rgba(156, 39, 176, 0.5);
+    box-shadow: 0 0 20px rgba(163, 71, 255, 0.8);
 }
+
 
 .button-group {
     display: flex;
@@ -208,6 +230,8 @@ h2.card-title {
 
 /* PUNKTESTAND (TABELLE) */
 .card.score-card {
+    box-shadow: var(--primary-glow); /* Score-Card hebt sich ab */
+    border: 2px solid var(--primary-color);
     flex-grow: 0;
     height: fit-content;
     display: flex;
@@ -215,9 +239,14 @@ h2.card-title {
     min-height: 200px; 
 }
 
+.card.score-card:hover {
+    transform: none; /* Kein Hover-Effekt für Score-Card */
+    box-shadow: var(--primary-glow);
+}
+
 .styled-table-wrapper {
     overflow-x: auto;
-    flex-grow: 0;
+    flex-grow: 1;
     max-height: 450px; 
     overflow-y: auto;
     padding-right: 5px; 
@@ -226,7 +255,7 @@ h2.card-title {
 .styled-table {
     width: 100%;
     border-collapse: separate; 
-    border-spacing: 0 10px; 
+    border-spacing: 0 8px; /* Weniger Abstand */
 }
 
 .styled-table thead th {
@@ -234,16 +263,13 @@ h2.card-title {
     color: var(--secondary-text-color);
     padding: 12px 10px;
     text-align: left;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    border-bottom: 2px solid var(--primary-color);
+    border-bottom: 2px solid var(--secondary-accent); /* Neon-Trennlinie */
 }
 
-.styled-table thead th:first-child { border-top-left-radius: 0; }
-.styled-table thead th:last-child { border-top-right-radius: 0; }
-
 .styled-table tbody td {
-    padding: 15px 10px; 
+    padding: 12px 10px; /* Weniger Padding */
     border-bottom: none;
     background-color: #222222; 
     border-radius: 8px; 
@@ -256,16 +282,49 @@ h2.card-title {
 .score-column {
     text-align: right;
     font-weight: 900; 
-    color: var(--secondary-accent); 
+    color: var(--secondary-accent); /* Neon-Farbe für die Punkte */
+    text-shadow: 0 0 5px rgba(39, 255, 178, 0.4);
 }
 
 .player-name-col {
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .scrollable-content {
     overflow-y: auto;
     padding-bottom: 5px; 
+}
+
+/* Akkordeon-Stil */
+.accordion-header {
+    background-color: #282828;
+    color: var(--text-color);
+    padding: 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    display: block;
+    border: 1px solid #333;
+    transition: background-color 0.3s;
+}
+
+.accordion-header:hover {
+    background-color: #333;
+}
+
+.accordion[open] .accordion-header {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom: 1px solid var(--primary-color);
+}
+
+.accordion-content {
+    padding: 15px;
+    border: 1px solid #333;
+    border-top: none;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    background-color: #202020;
 }
 
 

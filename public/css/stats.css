@@ -4,20 +4,56 @@
     align-items: center;
     gap: var(--layout-gap);
     padding: var(--layout-gap) 0 0 var(--layout-gap);
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 .leaderboard-card {
     margin-top: var(--layout-gap);
+    border: 2px solid var(--primary-color);
+    box-shadow: var(--primary-glow);
+    background-color: var(--card-background);
 }
 
 .leaderboard-table thead th {
     background-color: var(--primary-color); 
     color: var(--background-color);
+    font-weight: 900;
 }
 .leaderboard-table tbody td {
     color: var(--text-color);
+    background-color: #222;
 }
 .leaderboard-table .rank {
     font-weight: 900;
     color: var(--secondary-accent); 
+    font-size: 1.2em;
+    text-shadow: 0 0 5px rgba(39, 255, 178, 0.8);
+}
+
+/* Spezielle Hervorhebung für Top-Ränge */
+.leaderboard-table tbody tr:nth-child(1) td {
+    background-color: #2a1538; /* Dunkellila für Platz 1 */
+    border-left: 5px solid gold;
+}
+
+.leaderboard-table tbody tr:nth-child(2) td {
+    background-color: #252525;
+    border-left: 5px solid silver;
+}
+
+.leaderboard-table tbody tr:nth-child(3) td {
+    background-color: #202020;
+    border-left: 5px solid #CD7F32; /* Bronze */
+}
+
+/* Mobile Optimierung */
+@media (max-width: 768px) {
+    .leaderboard-table {
+        font-size: 0.8em;
+    }
+    .stats-header-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }

@@ -12,9 +12,9 @@
 
 <body class="host-body">
     <header class="header neon-header">
-        <h1>HOST-ZENTRALE <span style="color: var(--primary-color);"></span></h1>
+        <h1>HOST-ZENTRALE <span style="color: var(--primary-color);">🕹️</span></h1>
         <div id="auth-controls">
-            <span id="welcome-host" style="margin-right: 15px;"></span>
+            <span id="welcome-host" class="neon-text-highlight" style="margin-right: 15px;"></span>
             <a href="/stats.html" class="button secondary small-button">Zur Bestenliste</a>
             <button onclick="logout()" class="button danger small-button">Host-Logout</button>
         </div>
@@ -30,7 +30,7 @@
     <main id="host-area" class="host-container three-column-grid" style="display:none;">
 
         <div class="card logs-card">
-            <h2 class="card-title">Live-Aktivität (Logs)</h2>
+            <h2 class="card-title">Live-Aktivität (Logs) ⚡</h2>
 
             <div id="skip-display" class="card status-card">
                 <h3 class="card-title">Skip-Anfragen</h3>
@@ -39,7 +39,7 @@
             </div>
 
             <div class="controls-group typing-log-group">
-                <h3 class="group-title">Live-Eingaben <span style="color: var(--info-color);"></span></h3>
+                <h3 class="group-title">Live-Eingaben <span style="color: var(--info-color);">⌨️</span></h3>
                 <div id="live-typing-updates" class="log-area live-typing-log scrollable-content"></div>
             </div>
 
@@ -54,30 +54,27 @@
 
         <div id="wbmControlsArea" style="display: none;">
             <div class="controls-group">
-                <h3>WBM Einstellungen</h3>
-                <div class="controls-group">
-                    <h3>WBM Antworten-Set wählen</h3>
-                    <select id="wbmAnswerSelect" class="input-field select-field neon-border">
-                        <option value="">-- Wähle Antworten-Set --</option>
-                    </select>
-                    <button onclick="loadQuizzes(true)" class="button secondary-accent small-button">Sets neu
-                        laden</button>
-                    <p id="wbm-set-status" class="status-message"></p>
-                    <button onclick="startWbmRound()" class="button success glow full-width">
-                        Runde Starten (5 Min. Vorbereitung)
-                    </button>
-                    <div id="wbm-host-timer-container" class="card status-card timer-card"
-                        style="display: none; margin-bottom: 20px;">
-                        <h3 class="card-title">WBM Vorbereitungs-Timer</h3>
-                        <p id="wbm-host-countdown-display" class="status-message huge-status">05:00</p>
-                        <p class="status-message subtle-message" id="wbm-host-timer-status">Vorbereitungsphase aktiv.
-                        </p>
-                    </div>
+                <h3>WBM Antworten-Set wählen 📚</h3>
+                <select id="wbmAnswerSelect" class="input-field select-field neon-border">
+                    <option value="">-- Wähle Antworten-Set --</option>
+                </select>
+                <button onclick="loadQuizzes(true)" class="button secondary-accent small-button">Sets neu
+                    laden</button>
+                <p id="wbm-set-status" class="status-message"></p>
+                <button onclick="startWbmRound()" class="button success glow full-width">
+                    Runde Starten (5 Min. Vorbereitung)
+                </button>
+                <div id="wbm-host-timer-container" class="card status-card timer-card"
+                    style="display: none; margin-bottom: 20px;">
+                    <h3 class="card-title">WBM Vorbereitungs-Timer</h3>
+                    <p id="wbm-host-countdown-display" class="status-message huge-status neon-text-highlight">05:00</p>
+                    <p class="status-message subtle-message" id="wbm-host-timer-status">Vorbereitungsphase aktiv.
+                    </p>
                 </div>
             </div>
-            <hr class="neon-divider">
+            
             <div class="controls-group">
-                <h3>WBM - Bietphase</h3>
+                <h3>WBM - Bietphase 🔨</h3>
                 <p id="wbm-current-bid-info">Kein Gebot aktiv.</p>
                 <div class="styled-table-wrapper scrollable-content">
                     <table class="styled-table">
@@ -104,7 +101,7 @@
             <div id="wbmScoringArea" style="display: none;">
                 <hr class="neon-divider">
                 <div class="controls-group">
-                    <h3>WBM - Punktevergabe</h3>
+                    <h3>WBM - Punktevergabe 🏆</h3>
                     <p>Zuschlag an: <strong id="wbm-winner-display" class="neon-text-highlight"></strong></p>
                     <p>Gebot: <strong id="wbm-bid-display"></strong> Antworten</p>
 
@@ -125,7 +122,7 @@
         <div id="classicControlsArea">
             <div class="card central-control-card">
 
-                <h2 class="card-title neon-text">Quiz & Fragen Steuerung</h2>
+                <h2 class="card-title neon-text">Quiz & Fragen Steuerung ❓</h2>
                 <div id="quiz-selection-area" class="controls-group">
                     <select id="quizSelect" class="input-field select-field neon-border">
                         <option value="">-- Wähle ein Quiz --</option>
@@ -157,12 +154,12 @@
 
                 <hr class="neon-divider">
 
-                <h2 class="card-title neon-text">Buzzer & Punkte</h2>
+                <h2 class="card-title neon-text">Buzzer & Punkte 🔔</h2>
                 <div id="buzzer-status-area" class="controls-group buzzer-controls-group">
                     <p id="buzzer-status" class="status-message huge-status">BUZZER IST FREI.</p>
 
                     <div id="buzzer-timer-container" style="display: none;">
-                        <h2 class="timer-display">
+                        <h2 class="timer-display neon-text-highlight">
                             Zeit für Antwort: <span id="buzzer-timer">10</span>s
                         </h2>
                     </div>
@@ -198,7 +195,7 @@
         <div class="right-column-container">
 
             <div class="card score-card">
-                <h2 class="card-title">Aktueller Punktestand</h2>
+                <h2 class="card-title">Aktueller Punktestand 🏆</h2>
                 <div class="styled-table-wrapper scrollable-content">
                     <table id="current-scores" class="styled-table">
                         <thead>
@@ -213,7 +210,7 @@
                 </div>
                 <hr class="neon-divider">
                 <div id="manual-adjustment" class="controls-group">
-                    <h3>Manuelle Anpassung</h3>
+                    <h3>Manuelle Anpassung ±</h3>
                     <select id="adj-player-select" class="input-field select-field neon-border">
                         <option value="" disabled selected>Wähle Spieler</option>
                     </select>
@@ -226,8 +223,7 @@
             <div class="card settings-card">
                 <details class="accordion" open>
                     <summary class="accordion-header">
-                        <h2 class="card-title">Einstellungen & Ende <span
-                                style="color: var(--secondary-accent);"></span></h2>
+                        <h2 class="card-title">Einstellungen & Ende ⚙️</h2>
                     </summary>
                     <div class="accordion-content">
 
@@ -241,7 +237,7 @@
                             </select>
                             <button onclick="setGameMode()" class="button primary glow full-width">Modus
                                 Umschalten</button>
-                            <p id="mode-status" class="status-message">Aktueller Modus: Klassisches Buzzer-Quiz</p>
+                            <p id="mode-status" class="status-message neon-text-highlight">Aktueller Modus: Klassisches Buzzer-Quiz</p>
                         </div>
 
                         <hr class="neon-divider">

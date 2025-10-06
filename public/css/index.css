@@ -1,13 +1,13 @@
 /* SPIELER-BUZZER-BEREICH (index.html) */
 .player-header {
     text-align: center;
-    padding: 10x 20px;
-    background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
-    border-bottom: 2px solid var(--primary-color); 
+    padding: 15px 20px; /* Etwas mehr Padding */
+    background: #121212;
+    border-bottom: 2px solid var(--secondary-accent); /* Header-Linie in Secondary-Akzent */
 }
 
 .buzzer-section {
-    max-width: 1000px; 
+    max-width: 1200px; /* Etwas breiter */
     margin: 0 auto; 
     padding: var(--layout-gap); 
     flex-grow: 1;
@@ -21,8 +21,17 @@
 }
 
 .buzzer-container {
-    margin: 0; 
-    max-width: none; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
+    padding: 20px;
+    background-color: var(--card-background);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    max-width: 400px;
+    width: 100%;
 }
 
 .buzzer-button {
@@ -34,18 +43,21 @@
     font-size: 3.5em; 
     font-weight: 900;
     cursor: pointer;
-    border: 5px solid var(--primary-color);
+    border: 8px solid var(--primary-color); /* Dickerer Neon-Ring */
     transition: transform 0.1s, box-shadow 0.2s, background-color 0.2s, border-color 0.2s;
+    box-shadow: 0 0 40px rgba(163, 71, 255, 0.8); /* Intensiver Buzzer-Glow */
+    margin: 20px 0;
 }
 
 .buzzer-button:not(:disabled):hover {
-    background-color: #a36cfc;
-    box-shadow: 0 0 30px rgba(156, 39, 176, 0.7); 
+    background-color: #6C2DA0;
+    box-shadow: 0 0 50px rgba(163, 71, 255, 1); 
+    border-color: #fff; 
 }
 
 .buzzer-button:not(:disabled):active {
-    transform: scale(0.95);
-    border-color: #ffffff; 
+    transform: scale(0.9); /* Stärkerer Klick-Effekt */
+    border-color: var(--secondary-accent); 
 }
 
 .buzzer-button:disabled {
@@ -53,28 +65,28 @@
     color: #555;
     border-color: #333;
     cursor: not-allowed;
-    box-shadow: none;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .answer-submission-area {
     display: flex;
     gap: 10px;
-    max-width: 600px;
-    margin: 20px auto 40px;
+    margin: 20px 0 40px; /* Nur margin-bottom 40px */
 }
 
 .status-message.huge-status {
-    font-size: 1.5em;
-    font-weight: 600;
+    font-size: 1.8em; /* Grössere Statusmeldungen */
+    font-weight: 700;
     margin-top: 10px;
-    color: var(--primary-color); 
+    color: var(--secondary-accent); /* Neon-Farbe für wichtige Status */
+    text-shadow: 0 0 5px rgba(39, 255, 178, 0.5);
 }
 
 .player-game-layout {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 3fr 1fr; /* Buzzer-Bereich etwas breiter */
     gap: var(--layout-gap);
-    max-width: 1000px; 
+    max-width: 1200px; 
     margin: var(--layout-gap) auto 0 auto;
     align-items: start; 
 }
@@ -86,14 +98,15 @@
 }
 
 .answer-submission-area {
-    margin-left: auto;
-    margin-right: auto;
+    margin: 20px 0; /* Lokale Anpassung für links */
     width: 100%; 
-    max-width: 600px;
+    max-width: 500px; /* Einheitliche max-Breite */
 }
 
 .player-score-card {
     min-height: 400px; 
+    position: sticky; /* Punkteliste bleibt beim Scrollen sichtbar */
+    top: var(--layout-gap);
 }
 
 .game-top-bar {
@@ -107,11 +120,83 @@
 #welcome-message {
     margin: 0;
     font-size: 1.5em; 
-    color: var(--secondary-text-color); 
+    color: var(--secondary-accent); /* Willkommensnachricht in Akzentfarbe */
 }
 
+/* Wer bietet Mehr (WBM) Karten-Stil */
+#wbm-bidding-area {
+    background-color: #121212;
+    border: 2px solid var(--info-color); /* Eigene Farbe für WBM-Karte */
+    box-shadow: 0 0 20px rgba(51, 196, 255, 0.5);
+}
+
+.wbm-status-message {
+    color: var(--info-color);
+    font-weight: bold;
+}
+
+/* WBM Countdown */
+#wbm-prep-timer p {
+    font-size: 1.1em;
+}
+
+#wbm-countdown-display {
+    font-size: 2em;
+    font-weight: 900;
+}
+
+/* Skip-Bereich */
+#skip-controls {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #25102a;
+    border: 1px solid var(--primary-color);
+    box-shadow: 0 0 10px rgba(163, 71, 255, 0.4);
+}
+
+.skip-button-style {
+    background-color: var(--info-color);
+    color: var(--background-color);
+    width: 100%;
+}
+
+
+/* Responsive Anpassungen */
 @media (max-width: 1024px) {
     .player-game-layout {
-        gap: 20px;
+        grid-template-columns: 1fr; /* Alles untereinander */
+        gap: 25px;
+    }
+    .player-score-card {
+        order: -1; /* Score-Card nach oben */
+        position: static;
+    }
+    .buzzer-button {
+        width: 200px;
+        height: 200px;
+        font-size: 3em;
+    }
+    .answer-submission-area {
+        max-width: 90%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+@media (max-width: 600px) {
+    .buzzer-button {
+        width: 150px;
+        height: 150px;
+        font-size: 2em;
+    }
+    .answer-submission-area {
+        flex-direction: column;
+    }
+    .game-top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    #welcome-message {
+        margin-bottom: 10px;
     }
 }
