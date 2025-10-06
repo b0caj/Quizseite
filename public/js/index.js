@@ -2,6 +2,7 @@ let token = localStorage.getItem('token');
 let socket;
 let countdownInterval = null;
 const TIMER_DURATION = 10; // 10 Sekunden
+let wbmCountdownInterval = null;
 
 async function handleLogin() {
     const username = document.getElementById('username').value;
@@ -135,6 +136,152 @@ function connectSocket() {
         if (token) {
             socket.emit('authenticate', token);
         }
+    });
+
+    socket.on('gameModeChanged', (mode) => {
+        const classicArea = document.getElementById('classicBuzzerArea');
+        const wbmArea = document.getElementById('wbm-bidding-area');
+
+        if (mode === 'BIETEN_MEHR') {
+            if (classicArea) classicArea.style.display = 'none';
+            if (wbmArea) wbmArea.style.display = 'block';
+            console.log(`[PLAYER] UI auf Modus ${mode} umgeschaltet.`);
+            // Bei Modus-Wechsel Timer und Bid-Controls zurücksetzen/verstecken
+            document.getElementById('wbm-prep-timer').style.display = 'none';
+            document.getElementById('wbm-bid-controls').style.display = 'none';
+            document.getElementById('wbm-answer-info').style.display = 'none';
+        } else { // BUZZER
+            if (classicArea) classicArea.style.display = 'block';
+            if (wbmArea) wbmArea.style.display = 'none';
+            console.log(`[PLAYER] UI auf Modus ${mode} umgeschaltet.`);
+        }
+        // Stellt sicher, dass der Timer gestoppt wird, falls er lief
+        if (wbmCountdownInterval) clearInterval(wbmCountdownInterval);
+    });
+
+    // NEU: Listener für den Start einer WBM-Runde
+    socket.on('wbmRoundStarted', (data) => {
+        document.getElementById('wbm-category-display').textContent = data.category;
+        document.getElementById('wbm-bid-status').textContent = '';
+
+        // --- Phasensteuerung ---
+        if (data.phase === 'PREP') { // Vorbereitungsphase (5 Minuten)
+            document.getElementById('wbm-prep-timer').style.display = 'block';
+            document.getElementById('wbm-bid-controls').style.display = 'none';
+            document.getElementById('wbm-answer-info').style.display = 'none';
+            startWbmCountdown(5 * 60); // 5 Minuten Timer starten
+        } else if (data.phase === 'BIDDING') { // Bietphase
+            if (wbmCountdownInterval) clearInterval(wbmCountdownInterval); // Timer stoppen
+            document.getElementById('wbm-prep-timer').style.display = 'none';
+            document.getElementById('wbm-bid-controls').style.display = 'block';
+            document.getElementById('wbm-bid-status').textContent = 'Bietphase aktiv!';
+        }
+    });
+    
+    socket.on('wbmAnswerRevealed', ({ answer, index, allRevealed }) => {
+        // Zeigt die Antwort an
+        updateWbmRevealedAnswers(answer, index);
+
+        // Optional: Eine allgemeine Statusmeldung
+        document.getElementById('wbm-bid-status').textContent = `Eine neue Antwort wurde aufgedeckt!`;
+    });
+
+    // NEU: Listener für ein neues Höchstgebot
+    socket.on('newHighBid', (data) => {
+        document.getElementById('current-high-bid-value').textContent = data.bid;
+        document.getElementById('current-high-bidder').textContent = data.bidder;
+        // Visuelles Feedback für den Spieler, der gerade dran ist (optional)
+    });
+
+    socket.on('wbmAuctionWon', (data) => {
+        const wbmArea = document.getElementById('wbm-bidding-area');
+        const prepTimer = document.getElementById('wbm-prep-timer');
+        const bidControls = document.getElementById('wbm-bid-controls');
+        const answerInfo = document.getElementById('wbm-answer-info');
+
+        if (wbmArea && bidControls && answerInfo) {
+            // 1. Alle anderen WBM-Bereiche ausblenden
+            prepTimer.style.display = 'none';
+            bidControls.style.display = 'none';
+
+            // 2. Zuschlags-Meldung einblenden
+            answerInfo.style.display = 'block';
+
+            // 3. Details aktualisieren
+            document.getElementById('wbm-final-bid').textContent = data.bid;
+
+            console.log(`[PLAYER] AUCTION WON! Gebot: ${data.bid} für Kategorie: ${data.category}.`);
+        }
+
+        // Timer stoppen, falls er noch läuft
+        if (wbmCountdownInterval) clearInterval(wbmCountdownInterval);
+    });
+
+    socket.on('biddingPhaseConcluded', (data) => {
+        // Wenn es einen Gewinner gab und es NICHT der aktuelle Spieler ist
+        if (data.finalBidderId && data.finalBidderId !== currentPlayers[socket.id]?.id) {
+            const wbmArea = document.getElementById('wbm-bidding-area');
+            const bidControls = document.getElementById('wbm-bid-controls');
+            const prepTimer = document.getElementById('wbm-prep-timer');
+            const answerInfo = document.getElementById('wbm-answer-info');
+
+            if (wbmArea && bidControls && prepTimer && answerInfo) {
+                // Alle Eingabebereiche ausblenden
+                prepTimer.style.display = 'none';
+                bidControls.style.display = 'none';
+                answerInfo.style.display = 'none';
+
+                // Status-Nachricht setzen
+                document.getElementById('wbm-bid-status').textContent =
+                    `Zuschlag an ${data.finalBidder} mit ${data.finalBid} Antworten erteilt. Runde beendet.`;
+            }
+        } else if (!data.finalBidderId) {
+            // Fall: Keiner hat geboten
+            document.getElementById('wbm-bid-status').textContent = 'Keine Gebote abgegeben. Runde beendet.';
+        }
+        // Timer stoppen
+        if (wbmCountdownInterval) clearInterval(wbmCountdownInterval);
+    });
+
+    socket.on('wbmRoundConcluded', (data) => {
+        const wbmArea = document.getElementById('wbm-bidding-area');
+        if (!wbmArea) return;
+
+        // Alle dynamischen WBM-Bereiche ausblenden
+        document.getElementById('wbm-prep-timer').style.display = 'none';
+        document.getElementById('wbm-bid-controls').style.display = 'none';
+        document.getElementById('wbm-answer-info').style.display = 'none';
+
+        const finalStatus = document.createElement('p');
+        finalStatus.classList.add('status-message');
+
+        // Nachricht basierend auf dem Ergebnis erstellen
+        if (data.success && data.winnerId === currentPlayers[socket.id]?.id) {
+            // Gewinner, der das Gebot erfüllt hat
+            finalStatus.innerHTML = `🎉 **Runde erfolgreich!** Du hast ${data.correctAnswers} von ${data.finalBid} Antworten geliefert und **+${data.points} Punkte** erhalten.`;
+            finalStatus.style.color = 'var(--success-color)';
+        } else if (!data.success && data.winnerId === currentPlayers[socket.id]?.id) {
+            // Gewinner, der das Gebot NICHT erfüllt hat
+            finalStatus.innerHTML = `❌ **Gebot nicht erfüllt!** Du hast nur ${data.correctAnswers} von ${data.finalBid} Antworten geliefert und **${data.points} Punkte** erhalten.`;
+            finalStatus.style.color = 'var(--danger-color)';
+        } else {
+            // Für alle anderen Spieler
+            const outcome = data.success ? 'erfüllt' : 'nicht erfüllt';
+            finalStatus.innerHTML = `Runde abgeschlossen. ${data.winner} hat ${data.correctAnswers} von ${data.finalBid} Antworten geliefert und das Gebot **${outcome}**. Sie erhielten **${data.points} Punkte**.`;
+        }
+
+        // Status-Bereich leeren und den finalen Status hinzufügen
+        const bidStatus = document.getElementById('wbm-bid-status');
+        bidStatus.innerHTML = '';
+        bidStatus.appendChild(finalStatus);
+
+        // Timer stoppen
+        if (wbmCountdownInterval) clearInterval(wbmCountdownInterval);
+    });
+    socket.on('scoreUpdate', (scores) => {
+        console.log('[HOST] Punkte-Update erhalten:', scores);
+        // Ruft die Funktion auf, die die Tabelle neu zeichnet
+        updateScoreboard(scores);
     });
 
     // NEU: Spieler hört, wenn eine korrekte Antwort gewertet wird
@@ -418,3 +565,54 @@ socket.on('questionProgressUpdate', (data) => {
         progressElement.style.display = 'none';
     }
 });
+
+// Funktion zum Senden des Gebots an den Server
+function submitBid() {
+    const bidValue = parseInt(document.getElementById('wbm-bid-input').value, 10);
+    const bidStatus = document.getElementById('wbm-bid-status');
+
+    if (socket && socket.connected && bidValue > 0) {
+        // Gebotsanforderung an den Server senden
+        socket.emit('submitBid', bidValue);
+        bidStatus.textContent = `Dein Gebot (${bidValue}) wurde gesendet.`;
+        document.getElementById('wbm-bid-input').value = '';
+    } else {
+        bidStatus.textContent = 'Bitte gib ein Gebot größer als 0 ein.';
+    }
+}
+
+function startWbmCountdown(durationInSeconds) {
+    let timer = durationInSeconds;
+    const display = document.getElementById('wbm-countdown-display');
+
+    if (wbmCountdownInterval) clearInterval(wbmCountdownInterval);
+
+    wbmCountdownInterval = setInterval(() => {
+        let minutes = parseInt(timer / 60, 10);
+        let seconds = parseInt(timer % 60, 10);
+
+        minutes = minutes < 10 ? "0" + minutes : minutes;
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        display.textContent = minutes + ":" + seconds;
+
+        if (--timer < 0) {
+            clearInterval(wbmCountdownInterval);
+            display.textContent = "Zeit abgelaufen!";
+            // Hier könnte der Server über das Ende der Vorbereitung informiert werden,
+            // aber wir lassen das vorerst dem Host überlassen.
+        }
+    }, 1000);
+}
+function updateWbmRevealedAnswers(answer, index) {
+    const container = document.getElementById('wbm-revealed-answers');
+    if (!container) return;
+
+    const answerEl = document.createElement('li');
+    answerEl.className = 'wbm-revealed-answer-item neon-text';
+    // Fügen Sie die Nummerierung hinzu, damit der Spieler weiß, wie viele bereits aufgedeckt wurden.
+    answerEl.textContent = `Antwort ${index + 1}: ${answer}`;
+
+    // Fügt die neue Antwort zur Liste hinzu
+    container.appendChild(answerEl);
+}

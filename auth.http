@@ -1,0 +1,41 @@
+### Registrieren eines neuen Spielers (POST /api/register)
+
+POST http://localhost:3000/api/register
+Content-Type: application/json
+
+{
+    "username": "TestSpieler1",
+    "password": "geheimesPasswort123"
+}
+
+### Erneuter Versuch, den gleichen Spieler zu registrieren (sollte fehlschlagen)
+
+POST http://localhost:3000/api/register
+Content-Type: application/json
+
+{
+    "username": "TestSpieler1",
+    "password": "irgendeinPasswort"
+}
+
+
+### Spieler Login (POST /api/login)
+
+POST http://localhost:3000/api/login
+Content-Type: application/json
+
+{
+    "username": "TestSpieler1",
+    "password": "geheimesPasswort123"
+}
+
+### Geschützte Spieler-Route testen (GET /api/profile)
+# Ersetze den Token-Platzhalter!
+
+GET http://localhost:3000/api/profile
+
+### Bestenliste abrufen (GET /api/stats/top-players)
+# Ersetze den Token-Platzhalter!
+
+GET http://localhost:3000/api/stats/top-players
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZDVjNzAzNDY1OGM3Y2JjYjY5YmY1OCIsInVzZXJuYW1lIjoiVGVzdFNwaWVsZXIxIiwiaXNIb3N0Ijp0cnVlLCJpYXQiOjE3NTg4NzIyMTIsImV4cCI6MTc1ODg3NTgxMn0._Bem4L1btCYrcTWoXwXrG1s26xv_BaPraHWgW09gNXk

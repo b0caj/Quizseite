@@ -1,27 +1,41 @@
 /* Globale Variablen (für style.css) */
 :root {
     /* --- CORE DESIGN 2025: Tiefer Dark Mode mit minimalem Hintergrund-Kontrast --- */
-    --background-color: #0F0F0F; /* Sehr dunkler Hintergrund (Fast Schwarz) */
-    --card-background: #1E1E1E; /* Karten sind nur leicht heller (Weicherer Kontrast) */
-    --text-color: #EAEAEA; /* Sehr helles Weiß (Off-White) */
-    --secondary-text-color: #8C8C8C; /* Sanfteres Grau für Sekundärtext */
-    
+    --background-color: #0F0F0F;
+    /* Sehr dunkler Hintergrund (Fast Schwarz) */
+    --card-background: #1E1E1E;
+    /* Karten sind nur leicht heller (Weicherer Kontrast) */
+    --text-color: #EAEAEA;
+    /* Sehr helles Weiß (Off-White) */
+    --secondary-text-color: #8C8C8C;
+    /* Sanfteres Grau für Sekundärtext */
+
     /* --- Akzentfarben (Vibrantes Lila und Neon-Grün/Gelb) --- */
-    --primary-color: #9C27B0; /* Helles, energisches Lila (Hauptakzent) */
-    --secondary-accent: #CDDC39; /* Neon-Gelb/Grün (Zweiter Akzent für KPIs) */
-    --info-color: #9C27B0; /* Info/Logs bleibt Primary Color */
+    --primary-color: #9C27B0;
+    /* Helles, energisches Lila (Hauptakzent) */
+    --secondary-accent: #CDDC39;
+    /* Neon-Gelb/Grün (Zweiter Akzent für KPIs) */
+    --info-color: #9C27B0;
+    /* Info/Logs bleibt Primary Color */
 
     /* --- Statusfarben --- */
-    --success-color: #388E3C; /* Standard-Erfolg */
-    --danger-color: #C62828; /* Standard-Gefahr */
-    
+    --success-color: #388E3C;
+    /* Standard-Erfolg */
+    --danger-color: #C62828;
+    /* Standard-Gefahr */
+
     /* --- Effekte & Design (Sanfte Ecken und subtile Tiefenwirkung) --- */
-    --shadow: 0 10px 30px rgba(0, 0, 0, 0.6); /* Stärkere, weichere Schatten */
-    --shadow-inset: inset 0 0 10px rgba(0, 0, 0, 0.2); /* Innere, dunkle Schatten für Tiefe */
-    --primary-glow: 0 0 18px rgba(156, 39, 176, 0.4); /* Subtiler Lila-Glow beim Hover */
-    --border-radius: 16px; /* Hochgerundet für den modernen Look */
-    --layout-gap: 30px; /* Einheitlicher Abstand für das Bento-Box-Layout */
-    
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    /* Stärkere, weichere Schatten */
+    --shadow-inset: inset 0 0 10px rgba(0, 0, 0, 0.2);
+    /* Innere, dunkle Schatten für Tiefe */
+    --primary-glow: 0 0 18px rgba(156, 39, 176, 0.4);
+    /* Subtiler Lila-Glow beim Hover */
+    --border-radius: 16px;
+    /* Hochgerundet für den modernen Look */
+    --layout-gap: 30px;
+    /* Einheitlicher Abstand für das Bento-Box-Layout */
+
     /* --- NEUE TYPOGRAFIE --- */
     /* Standardmäßig auf Inter gesetzt. Ändern Sie hier zu 'Poppins', 'sans-serif' oder 'Montserrat', 'sans-serif' */
     --font-family-primary: 'Poppins', sans-serif;
@@ -41,30 +55,32 @@
  * ----------------------------------- */
 
 /* Entfernt alten Neon-Glow und setzt moderne Akzente */
-.neon-border, .glow {
-    box-shadow: none !important; 
-    border: 1px solid var(--primary-color); 
+.neon-border,
+.glow {
+    box-shadow: none !important;
+    border: 1px solid var(--primary-color);
     transition: box-shadow 0.3s;
 }
 
 /* Header-Styling (Sanfter Schatten, keine harte Linie) */
 .neon-header {
-    box-shadow: var(--shadow); 
-    border-bottom: none; 
+    box-shadow: var(--shadow);
+    border-bottom: none;
 }
 
 /* Moderne Divider: Dünne, gedämpfte Linie in der Mitte */
 .neon-divider {
-    box-shadow: none; 
+    box-shadow: none;
     border: 0;
     height: 1px;
     background-image: linear-gradient(to right, rgba(0, 0, 0, 0), var(--secondary-text-color), rgba(0, 0, 0, 0));
-    margin: var(--layout-gap) 0; /* Mehr vertikaler Platz */
+    margin: var(--layout-gap) 0;
+    /* Mehr vertikaler Platz */
 }
 
 /* Reduziert die Helligkeit des Headers-Textes */
 .header h1 {
-    text-shadow: none; 
+    text-shadow: none;
 }
 
 /* -----------------------------------
@@ -72,7 +88,7 @@
  * ----------------------------------- */
 body {
     /* ANPASSUNG: Neue Schriftart-Variable verwenden */
-    font-family: var(--font-family-primary); 
+    font-family: var(--font-family-primary);
     background-color: var(--background-color);
     color: var(--text-color);
     margin: 0;
@@ -81,16 +97,19 @@ body {
     min-height: 100vh;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
     color: var(--text-color);
     margin-top: 0;
-    font-weight: 900; /* Sehr fett für den modernen, dominanten Look */
+    font-weight: 900;
+    /* Sehr fett für den modernen, dominanten Look */
     letter-spacing: -0.5px;
 }
 
 h2.card-title {
     /* Entfernt die harte Linie, da das Design dies nicht nutzt */
-    border-bottom: none; 
+    border-bottom: none;
     padding-bottom: 0;
     margin-bottom: 15px;
     font-weight: 700;
@@ -100,11 +119,12 @@ h2.card-title {
     border: 0;
     height: 1px;
     background-image: linear-gradient(to right, rgba(0, 0, 0, 0), var(--secondary-text-color), rgba(0, 0, 0, 0));
-    margin: var(--layout-gap) 0; 
+    margin: var(--layout-gap) 0;
 }
 
 .content-container {
-    padding: var(--layout-gap); /* Einheitlicher, großer Innenabstand */
+    padding: var(--layout-gap);
+    /* Einheitlicher, großer Innenabstand */
     max-width: 1600px;
     margin: 0 auto;
 }
@@ -137,15 +157,17 @@ h2.card-title {
     padding: 30px;
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
-    max-width: 400px; /* Etwas breiter */
+    max-width: 400px;
+    /* Etwas breiter */
     flex-grow: 1;
     text-align: center;
-    border: none; /* Harte Linien entfernen */
+    border: none;
+    /* Harte Linien entfernen */
 }
 
 /* Stil für die große Willkommensschrift im Auth-Bereich */
 .auth-card h2 {
-    font-size: 2.5em; 
+    font-size: 2.5em;
     line-height: 1.1;
     font-weight: 800;
     color: var(--text-color);
@@ -154,7 +176,7 @@ h2.card-title {
 .register-card {
     /* Die Registerkarte bekommt einen lila Rahmen wie die Kacheln im Bild */
     border: 1px solid var(--primary-color);
-    box-shadow: var(--shadow), 0 0 10px rgba(156, 39, 176, 0.2); 
+    box-shadow: var(--shadow), 0 0 10px rgba(156, 39, 176, 0.2);
 }
 
 /* -----------------------------------
@@ -162,11 +184,13 @@ h2.card-title {
  * ----------------------------------- */
 .card {
     background-color: var(--card-background);
-    padding: 30px; /* Großer Innenabstand */
+    padding: 30px;
+    /* Großer Innenabstand */
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow-inset); /* Innere Schatten für Tiefe */
+    box-shadow: var(--shadow-inset);
+    /* Innere Schatten für Tiefe */
     border: none;
-    height: fit-content; 
+    height: fit-content;
     transition: transform 0.3s ease-in-out, box-shadow 0.3s;
 }
 
@@ -185,6 +209,7 @@ h2.card-title {
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
 }
+
 .kpi-card-green {
     background-color: var(--secondary-accent);
     color: var(--background-color);
@@ -200,11 +225,14 @@ h2.card-title {
  * ----------------------------------- */
 .input-field {
     width: 100%;
-    padding: 14px; /* Mehr Höhe */
+    padding: 14px;
+    /* Mehr Höhe */
     margin: 8px 0;
     border: 1px solid #3a3a3a;
-    border-radius: 8px; /* Leicht abgerundet */
-    background-color: #121212; /* Sehr dunkler Input */
+    border-radius: 8px;
+    /* Leicht abgerundet */
+    background-color: #121212;
+    /* Sehr dunkler Input */
     color: var(--text-color);
     box-sizing: border-box;
     transition: border-color 0.3s, box-shadow 0.3s;
@@ -223,7 +251,7 @@ h2.card-title {
 .button {
     padding: 12px 20px;
     border: none;
-    border-radius: 8px; 
+    border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
     transition: background-color 0.3s, transform 0.1s, box-shadow 0.3s;
@@ -241,22 +269,34 @@ h2.card-title {
 
 .button.primary {
     background-color: var(--primary-color);
-    color: var(--background-color); 
+    color: var(--background-color);
 }
 
 /* Secondary Button bekommt den Neon-Grün Akzent */
 .button.secondary {
-    background-color: var(--secondary-accent); 
+    background-color: var(--secondary-accent);
     color: var(--background-color);
 }
+
 .button.secondary-accent {
     background-color: var(--secondary-accent);
     color: var(--background-color);
 }
 
-.button.success { background-color: var(--success-color); color: var(--background-color); }
-.button.danger { background-color: var(--danger-color); color: var(--background-color); }
-.button.info { background-color: var(--info-color); color: var(--background-color); }
+.button.success {
+    background-color: var(--success-color);
+    color: var(--background-color);
+}
+
+.button.danger {
+    background-color: var(--danger-color);
+    color: var(--background-color);
+}
+
+.button.info {
+    background-color: var(--info-color);
+    color: var(--background-color);
+}
 
 /* Moderner Hover-Effekt ohne den alten .glow selector */
 .button:not(:disabled):hover {
@@ -282,13 +322,14 @@ h2.card-title {
     text-align: center;
     padding: 10x 20px;
     background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
-    border-bottom: 2px solid var(--primary-color); /* Lila Akzent-Linie */
+    border-bottom: 2px solid var(--primary-color);
+    /* Lila Akzent-Linie */
 }
 
 .buzzer-section {
-    max-width: 1000px; 
-    margin: 0 auto; 
-    padding: var(--layout-gap); 
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: var(--layout-gap);
     flex-grow: 1;
 }
 
@@ -300,8 +341,8 @@ h2.card-title {
 }
 
 .buzzer-container {
-    margin: 0; 
-    max-width: none; 
+    margin: 0;
+    max-width: none;
 }
 
 .buzzer-button {
@@ -310,7 +351,8 @@ h2.card-title {
     border-radius: 50%;
     background-color: var(--primary-color);
     color: var(--background-color);
-    font-size: 3.5em; /* Etwas größer */
+    font-size: 3.5em;
+    /* Etwas größer */
     font-weight: 900;
     cursor: pointer;
     border: 5px solid var(--primary-color);
@@ -320,12 +362,14 @@ h2.card-title {
 /* Buzz-Button Hover/Active mit Glow */
 .buzzer-button:not(:disabled):hover {
     background-color: #a36cfc;
-    box-shadow: 0 0 30px rgba(156, 39, 176, 0.7); /* Starker Glow */
+    box-shadow: 0 0 30px rgba(156, 39, 176, 0.7);
+    /* Starker Glow */
 }
 
 .buzzer-button:not(:disabled):active {
     transform: scale(0.95);
-    border-color: #ffffff; /* Weißer Ring beim Drücken */
+    border-color: #ffffff;
+    /* Weißer Ring beim Drücken */
 }
 
 .buzzer-button:disabled {
@@ -347,33 +391,33 @@ h2.card-title {
     font-size: 1.5em;
     font-weight: 600;
     margin-top: 10px;
-    color: var(--primary-color); 
+    color: var(--primary-color);
 }
 
 .player-game-layout {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: var(--layout-gap);
-    max-width: 1000px; 
+    max-width: 1000px;
     margin: var(--layout-gap) auto 0 auto;
-    align-items: start; 
+    align-items: start;
 }
 
 .buzzer-area-left {
     display: flex;
     flex-direction: column;
-    align-items: center; 
+    align-items: center;
 }
 
 .answer-submission-area {
     margin-left: auto;
     margin-right: auto;
-    width: 100%; 
+    width: 100%;
     max-width: 600px;
 }
 
 .player-score-card {
-    min-height: 400px; 
+    min-height: 400px;
 }
 
 .game-top-bar {
@@ -386,8 +430,9 @@ h2.card-title {
 
 #welcome-message {
     margin: 0;
-    font-size: 1.5em; 
-    color: var(--secondary-text-color); /* Etwas gedämpfter */
+    font-size: 1.5em;
+    color: var(--secondary-text-color);
+    /* Etwas gedämpfter */
 }
 
 /* -----------------------------------
@@ -397,11 +442,11 @@ h2.card-title {
 .host-container.three-column-grid {
     display: grid;
     /* Angepasstes, modernes Grid mit großen Gaps (Bento-Box) */
-    grid-template-columns: 2fr 3.5fr 2fr; 
+    grid-template-columns: 2fr 3.5fr 2fr;
     gap: var(--layout-gap);
     padding: var(--layout-gap);
-    min-height: calc(100vh - 80px); 
-    align-items: start; 
+    min-height: calc(100vh - 80px);
+    align-items: start;
     height: 100%;
 }
 
@@ -416,15 +461,17 @@ h2.card-title {
  * LOGS & AKTIVITÄT
  * ----------------------------------- */
 .log-area {
-    background-color: #050505; /* Noch dunklerer Log-Hintergrund */
-    color: #4CAF50; /* Gedämpftes Grün für Logs */
+    background-color: #050505;
+    /* Noch dunklerer Log-Hintergrund */
+    color: #4CAF50;
+    /* Gedämpftes Grün für Logs */
     border: 1px solid #1a1a1a;
     padding: 15px;
     overflow-y: auto;
     border-radius: 8px;
     font-family: 'Consolas', 'Monospace';
     font-size: 0.9em;
-    height: 150px; 
+    height: 150px;
     box-shadow: var(--shadow-inset);
 }
 
@@ -434,7 +481,7 @@ h2.card-title {
 
 .scrollable-content {
     overflow-y: auto;
-    padding-bottom: 5px; 
+    padding-bottom: 5px;
 }
 
 
@@ -444,21 +491,24 @@ h2.card-title {
 .question-display-area {
     background-color: var(--card-background);
     border: 2px solid var(--primary-color);
-    padding: 40px; /* Viel Innenabstand für Fokus */
+    padding: 40px;
+    /* Viel Innenabstand für Fokus */
     border-radius: var(--border-radius);
     text-align: center;
     box-shadow: var(--primary-glow);
 }
 
 .question-text.big-text {
-    font-size: 2em; /* Sehr groß und prominent */
+    font-size: 2em;
+    /* Sehr groß und prominent */
     font-weight: 900;
     color: var(--text-color);
     margin: 20px 0;
 }
 
 .answer-text {
-    color: var(--secondary-accent); /* Neon-Grün/Gelb für die Antwort */
+    color: var(--secondary-accent);
+    /* Neon-Grün/Gelb für die Antwort */
     font-weight: 700;
     font-size: 1.2em;
     margin-top: 25px;
@@ -477,26 +527,28 @@ h2.card-title {
     height: fit-content;
     display: flex;
     flex-direction: column;
-    min-height: 200px; 
+    min-height: 200px;
 }
 
 .styled-table-wrapper {
     overflow-x: auto;
     flex-grow: 0;
-    max-height: 450px; 
+    max-height: 450px;
     overflow-y: auto;
-    padding-right: 5px; 
+    padding-right: 5px;
 }
 
 .styled-table {
     width: 100%;
-    border-collapse: separate; 
-    border-spacing: 0 10px; /* Mehr Abstand zwischen den Zeilen */
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    /* Mehr Abstand zwischen den Zeilen */
 }
 
 /* Tabellen-Header mit Akzent-Unterlinie */
 .styled-table thead th {
-    background-color: var(--card-background); /* Dunkel wie Karte, nicht Lila */
+    background-color: var(--card-background);
+    /* Dunkel wie Karte, nicht Lila */
     color: var(--secondary-text-color);
     padding: 12px 10px;
     text-align: left;
@@ -505,14 +557,22 @@ h2.card-title {
     border-bottom: 2px solid var(--primary-color);
 }
 
-.styled-table thead th:first-child { border-top-left-radius: 0; }
-.styled-table thead th:last-child { border-top-right-radius: 0; }
+.styled-table thead th:first-child {
+    border-top-left-radius: 0;
+}
+
+.styled-table thead th:last-child {
+    border-top-right-radius: 0;
+}
 
 .styled-table tbody td {
-    padding: 15px 10px; /* Mehr vertikaler Padding */
+    padding: 15px 10px;
+    /* Mehr vertikaler Padding */
     border-bottom: none;
-    background-color: #222222; /* Leicht dunklere Zeilen */
-    border-radius: 8px; /* Abgerundete Zeilen */
+    background-color: #222222;
+    /* Leicht dunklere Zeilen */
+    border-radius: 8px;
+    /* Abgerundete Zeilen */
 }
 
 .styled-table tbody tr:hover td {
@@ -521,8 +581,10 @@ h2.card-title {
 
 .score-column {
     text-align: right;
-    font-weight: 900; /* Sehr fett */
-    color: var(--secondary-accent); /* Neon-Grün für Punktzahl */
+    font-weight: 900;
+    /* Sehr fett */
+    color: var(--secondary-accent);
+    /* Neon-Grün für Punktzahl */
 }
 
 .player-name-col {
@@ -542,15 +604,19 @@ h2.card-title {
 }
 
 .leaderboard-table thead th {
-    background-color: var(--primary-color); /* Lila Header für Bestenliste */
+    background-color: var(--primary-color);
+    /* Lila Header für Bestenliste */
     color: var(--background-color);
 }
+
 .leaderboard-table tbody td {
     color: var(--text-color);
 }
+
 .leaderboard-table .rank {
     font-weight: 900;
-    color: var(--secondary-accent); /* Neon-Grün für den Rang */
+    color: var(--secondary-accent);
+    /* Neon-Grün für den Rang */
 }
 
 /* -----------------------------------
@@ -559,7 +625,7 @@ h2.card-title {
 
 @media (max-width: 1400px) {
     .host-container.three-column-grid {
-        grid-template-columns: 2fr 3.5fr 2fr; 
+        grid-template-columns: 2fr 3.5fr 2fr;
     }
 }
 
@@ -568,27 +634,33 @@ h2.card-title {
         grid-template-columns: 1fr 1fr;
         gap: 20px;
     }
+
     .central-control-card {
-        grid-column: 1 / span 2; 
+        grid-column: 1 / span 2;
         order: 1;
     }
+
     .logs-card {
         order: 2;
         height: fit-content;
     }
+
     .right-column-container {
         order: 3;
         height: fit-content;
     }
+
     .auth-section {
         flex-direction: column;
         align-items: center;
         gap: 20px;
     }
+
     .auth-card {
         width: 90%;
         max-width: none;
     }
+
     .player-game-layout {
         gap: 20px;
     }
@@ -599,14 +671,17 @@ h2.card-title {
         grid-template-columns: 1fr;
         padding: 15px;
     }
+
     .content-container {
         padding: 15px;
     }
+
     .header {
         flex-direction: column;
         align-items: flex-start;
         padding: 15px;
     }
+
     #auth-controls {
         margin-top: 10px;
     }

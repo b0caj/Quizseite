@@ -15,8 +15,8 @@ const upload = multer({ storage: storage }); // <<< Kann Multer JETZT verwenden
  * POST /api/quiz/upload
  * Erlaubt Hosts das Hochladen einer Quiz-JSON-Datei.
  */
-router.post('/upload', protect, upload.single('quizFile'), async (req, res) => { 
-    
+router.post('/upload', protect, upload.single('quizFile'), async (req, res) => {
+
     // 1. Host-Prüfung
     if (!req.user || !req.user.isHost) {
         return res.status(403).json({ message: 'Zugriff verweigert. Nur Hosts dürfen Quizzes hochladen.' });
@@ -26,9 +26,9 @@ router.post('/upload', protect, upload.single('quizFile'), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: 'Keine Datei hochgeladen.' });
     }
-    
+
     if (req.file.mimetype !== 'application/json') {
-         return res.status(400).json({ message: 'Ungültiges Dateiformat. Es wird eine JSON-Datei erwartet.' });
+        return res.status(400).json({ message: 'Ungültiges Dateiformat. Es wird eine JSON-Datei erwartet.' });
     }
 
     try {
@@ -36,26 +36,48 @@ router.post('/upload', protect, upload.single('quizFile'), async (req, res) => {
         const jsonString = req.file.buffer.toString('utf8');
         const quizData = JSON.parse(jsonString);
 
-        if (!quizData.title || !quizData.questions || !Array.isArray(quizData.questions)) {
-            return res.status(400).json({ message: 'Ungültige JSON-Struktur. Erwartet: { "title": "...", "questions": [...] }' });
+        // NEU: Erlaube Uploads, die nur WBM-Antworten oder nur Quiz-Fragen enthalten.
+        // Die Validierung wird gelockert: Es muss entweder 'questions' ODER 'wbmAnswers' geben.
+        if (!quizData.title) {
+            return res.status(400).json({ message: 'Ungültige JSON-Struktur. "title" fehlt.' });
         }
 
-        // Optional: Basis-Validierung der Fragen-Struktur
-        const isValid = quizData.questions.every(q => q.text && q.answer);
-        if (!isValid) {
-            return res.status(400).json({ message: 'Mindestens eine Frage ist unvollständig (fehlt Text oder Antwort).' });
+        let validQuestions = [];
+        let validWbmAnswers = [];
+
+        // Prüfe auf klassische Quizfragen
+        if (quizData.questions && Array.isArray(quizData.questions)) {
+            const isValid = quizData.questions.every(q => q.text && q.answer);
+            if (!isValid) {
+                return res.status(400).json({ message: 'Mindestens eine Quiz-Frage ist unvollständig (fehlt Text oder Antwort).' });
+            }
+            validQuestions = quizData.questions;
         }
+
+        // NEU: Prüfe auf WBM-Antworten
+        if (quizData.wbmAnswers && Array.isArray(quizData.wbmAnswers)) {
+            // Stelle sicher, dass alle Elemente Strings sind
+            validWbmAnswers = quizData.wbmAnswers.filter(a => typeof a === 'string' && a.trim() !== '');
+        }
+
+        // Wenn weder Fragen noch WBM-Antworten vorhanden sind, ist die Datei ungültig.
+        if (validQuestions.length === 0 && validWbmAnswers.length === 0) {
+            return res.status(400).json({ message: 'Die JSON muss entweder "questions" oder "wbmAnswers" enthalten.' });
+        }
+
 
         // 4. Quiz in Datenbank speichern
         const newQuiz = new Quiz({
             title: quizData.title,
             ownerId: req.user.id, // ID des eingeloggten Hosts
-            questions: quizData.questions
+            questions: validQuestions,
+            // NEU: Speichere die WBM-Antworten in Kleinbuchstaben (für einfachere spätere Prüfung)
+            wbmAnswers: validWbmAnswers.map(a => a.toLowerCase().trim()),
         });
 
         await newQuiz.save();
 
-        res.status(201).json({ 
+        res.status(201).json({
             message: `Quiz "${newQuiz.title}" erfolgreich gespeichert!`,
             quizId: newQuiz._id
         });
@@ -64,7 +86,7 @@ router.post('/upload', protect, upload.single('quizFile'), async (req, res) => {
         console.error('Quiz-Upload-Fehler:', error);
         // Fehler beim Parsen des JSON abfangen
         if (error.name === 'SyntaxError') {
-             return res.status(400).json({ message: 'Fehler beim Parsen der JSON-Datei. Überprüfen Sie die Syntax.' });
+            return res.status(400).json({ message: 'Fehler beim Parsen der JSON-Datei. Überprüfen Sie die Syntax.' });
         }
         res.status(500).json({ message: 'Interner Serverfehler beim Speichern des Quiz.' });
     }
@@ -79,7 +101,8 @@ router.get('/list', protect, async (req, res) => {
     try {
         // Suche alle Quizze, die der aktuellen Host-ID gehören
         const quizzes = await Quiz.find({ ownerId: req.user.id })
-            .select('title createdAt') // Wir brauchen nur Titel und ID
+            // KORREKTUR: 'wbmAnswers' MUSS HIER ENTHALTEN SEIN, damit das Frontend die Unterscheidung vornehmen kann.
+            .select('title createdAt wbmAnswers')
             .sort({ createdAt: -1 });
 
         res.status(200).json(quizzes);
@@ -94,7 +117,7 @@ router.get('/:quizId', protect, async (req, res) => {
     if (!req.user || !req.user.isHost) {
         return res.status(403).json({ message: 'Zugriff verweigert.' });
     }
-    
+
     const quizId = req.params.quizId;
 
     try {

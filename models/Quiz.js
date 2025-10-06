@@ -9,12 +9,13 @@ const questionSchema = new mongoose.Schema({
 
 const quizSchema = new mongoose.Schema({
     title: { type: String, required: true },
-    ownerId: { 
-        type: mongoose.Schema.Types.ObjectId, 
+    ownerId: {
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Player', // Referenz zum Player-Modell
-        required: true 
+        required: true
     },
     questions: [questionSchema],
+    wbmAnswers: { type: [String], default: [] },
     createdAt: { type: Date, default: Date.now }
 });
 

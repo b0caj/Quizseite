@@ -3,14 +3,31 @@
 const jsonwebtoken = require('jsonwebtoken');
 const Player = require('../models/Player');
 const Game = require('../models/Game');
+const Quiz = require('../models/Quiz');
+//const stats = gameScores[playerId]; 
 
 // --- Globaler Spielzustand (MUSST DU VON server.js HIERHER VERSCHIEBEN) ---
+let gameScores = {};
 let buzzerLocked = false;
 let firstBuzzer = null;
 let currentPlayers = {};
 let currentAnswers = [];
-let gameScores = {};
+let currentQuiz = null;
+let currentQuestionIndex = 0; // Ebenfalls nützlich für den Server
+
+
 let skipRequests = { count: 0, playerIds: new Set() };
+// NEU: Zustand für den Spielmodus
+let gameMode = 'BUZZER';
+let wbmState = {
+    category: null,
+    bids: {}, // { playerId: bidValue, ... }
+    currentBidderId: null,
+    currentBid: 0,
+    maxErrors: 3,// Max. Fehler, bevor die Runde verloren ist (wie im Video)
+    wbmAnswers: [],          // Die komplette Liste der Antworten (wird beim Rundenstart geladen)
+    revealedWbmAnswers: []   // Die Antworten, die bereits aufgedeckt wurden
+};
 // --- End Globaler Spielzustand ---
 
 function emitPlayerListToHost(io) {
@@ -101,6 +118,279 @@ module.exports = (io) => {
                     socket.emit('authError', 'Authentifizierung fehlgeschlagen.');
                 }
             });
+
+            socket.on('setGameMode', (mode) => {
+                // Sicherstellen, dass der Modus gültig ist
+                if (mode === 'BUZZER' || mode === 'BIETEN_MEHR') {
+                    gameMode = mode;
+                    // Host-Nachricht zurücksenden, um die UI im Host-Browser zu aktualisieren
+                    socket.emit('gameModeSet', mode);
+                    // Alle Spieler informieren, damit sie ihre UI anpassen können (nächster Schritt)
+                    io.emit('gameModeChanged', mode);
+
+                    console.log(`[SERVER] Spielmodus auf ${mode} gesetzt. Clients informiert.`);
+                }
+            });
+
+            // Listener für den Host, um eine WBM-Runde zu starten
+            // socketHandler.js: AKTUALISIERTER LISTENER FÜR RUNDENSTART
+
+            // Listener für den Host, um eine WBM-Runde zu starten
+            socket.on('startWbmRound', async (data) => {
+                // Stellen Sie sicher, dass sich der Server im richtigen Modus befindet
+                if (gameMode !== 'BIETEN_MEHR') return;
+
+                // Wir gehen davon aus, dass der Host die Quiz-ID übermittelt
+                const { quizId, category } = data;
+
+                // Optional: Überprüfen Sie, ob der Absender der Host ist
+                // if (!user || !user.isHost) return; 
+
+                if (!quizId) {
+                    console.error('[SERVER] WBM-Startfehler: Keine Quiz-ID angegeben.');
+                    return;
+                }
+
+                try {
+                    // 1. Quiz aus der Datenbank laden (nur die wbmAnswers und Kategorie)
+                    // Wir suchen das Quiz anhand der ID.
+                    const loadedQuiz = await Quiz.findById(quizId).select('wbmAnswers').exec();
+
+                    if (!loadedQuiz) {
+                        console.error(`[SERVER] WBM-Startfehler: Quiz mit ID ${quizId} nicht gefunden.`);
+                        socket.emit('hostError', `Quiz mit ID ${quizId} nicht gefunden.`);
+                        return;
+                    }
+
+                    // 2. Antworten aus dem geladenen Dokument abrufen
+                    // ANNAHME: wbmAnswers ist ein Array von Strings (gemäß Quiz.js Schema).
+                    const answers = loadedQuiz.wbmAnswers || [];
+
+                    // 3. Zustand für neue Runde zurücksetzen und setzen
+                    wbmState.category = category;
+                    wbmState.bids = {};
+                    wbmState.currentBid = 0;
+                    wbmState.currentBidderId = null;
+                    wbmState.currentBidderUsername = null;
+
+                    // *** WICHTIG: Antworten im Server-Zustand speichern ***
+                    wbmState.wbmAnswers = answers;
+                    wbmState.revealedWbmAnswers = []; // Array der bereits aufgedeckten Antworten zurücksetzen
+
+                    currentQuiz = loadedQuiz;
+
+                    // 4. Antworten NUR an den Host senden (zum Aufdecken)
+                    // Host erhält die vollständige Liste. Spieler erhalten nur die Kategorie.
+                    if (user.isHost) {
+                        // Sende die rohen Antworten zur Verarbeitung im Host-Client
+                        socket.emit('wbmAnswersLoaded', {
+                            answers: wbmState.wbmAnswers
+                        });
+                        console.log(`✅ WBM: ${wbmState.wbmAnswers.length} Antworten an Host gesendet.`);
+                    }
+
+                    // 5. Spieler und Host über Start der Vorbereitungsphase informieren
+                    io.emit('wbmRoundStarted', { category: category, phase: 'PREP' });
+                    socket.emit('newHighBid', { bidder: 'niemand', bid: 0, allBids: {} });
+
+                    console.log(`[SERVER] WBM-Runde gestartet: ${category} (Vorbereitung)`);
+
+                    // 6. Timer für Bietphase (bleibt gleich)
+                    const PREP_TIME_MS = 5 * 60 * 1000;
+
+                    setTimeout(() => {
+                        io.emit('wbmRoundStarted', { category: category, phase: 'BIDDING' });
+                        console.log(`[SERVER] WBM: Vorbereitungszeit abgelaufen. Bietphase aktiv.`);
+                    }, PREP_TIME_MS);
+
+                } catch (error) {
+                    console.error('[SERVER] Fehler beim Laden des Quiz für WBM-Start:', error);
+                    socket.emit('hostError', 'Fehler beim Laden der WBM-Antworten.');
+                }
+            });
+
+            socket.on('wbmRoundStarted', (data) => {
+                // WICHTIG: Prüfen, ob die Phase 'PREP' ist (Vorbereitungsphase)
+                if (data.phase === 'PREP') {
+                    console.log('WBM Round Started Event empfangen. Starte Host-Timer.');
+                    // Ruft die neue Funktion auf
+                    startWbmHostCountdown(5 * 60);
+                } else if (data.phase === 'BIDDING') {
+                    // Timer stoppen und Container ausblenden, wenn die Bietphase beginnt
+                    if (wbmHostCountdownInterval) clearInterval(wbmHostCountdownInterval);
+                    const container = document.getElementById('wbm-host-timer-container');
+                    if (container) container.style.display = 'none';
+                }
+            });
+
+            socket.on('revealWbmAnswer', ({ answerIndex }) => {
+                // Host-Prüfung (falls implementiert)
+                // if (socket.user && !socket.user.isHost) return; 
+
+                const answer = wbmState.wbmAnswers[answerIndex];
+
+                if (!answer || wbmState.revealedWbmAnswers.includes(answer)) {
+                    console.log(`Fehler: Ungültiger Index ${answerIndex} oder Antwort bereits aufgedeckt.`);
+                    return;
+                }
+
+                if (currentQuiz.gameMode === 'BIETEN_MEHR') {
+                    wbmState.wbmAnswers = Quiz.wbmAnswers; // Array of strings
+                    wbmState.revealedWbmAnswers = [];
+                    socket.emit('wbmAnswersLoaded', { answers: wbmState.wbmAnswers }); // NUR an den Host senden
+                }
+
+                // Zustand aktualisieren
+                wbmState.revealedWbmAnswers.push(answer);
+
+                // Sende die aufgedeckte Antwort an ALLE (Host und Spieler)
+                io.emit('wbmAnswerRevealed', {
+                    answer: answer,
+                    index: answerIndex, // Senden Sie den Index zur Aktualisierung des Host-UIs
+                    allRevealed: wbmState.revealedWbmAnswers.length === wbmState.wbmAnswers.length
+                });
+
+                console.log(`✅ WBM Antwort ${answerIndex} ('${answer}') aufgedeckt.`);
+            });
+
+            // Listener für Spieler, die ein Gebot abgeben
+            socket.on('submitBid', (bidValue) => {
+                if (gameMode !== 'BIETEN_MEHR') return;
+
+                const playerId = currentPlayers[socket.id].id;
+                const username = currentPlayers[socket.id].username;
+
+                // 1. Validierung des Gebots
+                if (typeof bidValue !== 'number' || bidValue <= wbmState.currentBid) {
+                    socket.emit('wbmBidRejected', 'Dein Gebot muss höher sein als das aktuelle Höchstgebot.');
+                    return;
+                }
+
+                // 2. Zustand aktualisieren (Speicherung für alle Gebote)
+                wbmState.bids[playerId] = {
+                    bid: bidValue,
+                    username: username,
+                    playerId: playerId
+                };
+
+                // 3. Höchstgebot aktualisieren
+                wbmState.currentBid = bidValue;
+                wbmState.currentBidderId = playerId;
+                wbmState.currentBidderUsername = username;
+
+                // 4. Alle (inkl. Host) über das neue Höchstgebot informieren
+                // Wir senden die gesamte Liste der abgegebenen Gebote an den Host (updateWbmBidTable)
+                io.emit('newHighBid', {
+                    bidder: username,
+                    bid: bidValue,
+                    allBids: wbmState.bids // NEU: Alle Gebote für Host-Tabelle senden
+                });
+                console.log(`[SERVER] WBM: Neues Höchstgebot: ${username} bietet ${bidValue}.`);
+            });
+
+            socket.on('stopBiddingPhase', () => {
+                if (gameMode !== 'BIETEN_MEHR') return;
+
+                // Daten des finalen Bieters
+                const finalBidder = wbmState.currentBidderUsername;
+                const finalBid = wbmState.currentBid;
+                const finalBidderId = wbmState.currentBidderId;
+
+                if (finalBidderId) {
+                    console.log(`[SERVER] WBM: Biet-Phase beendet. Zuschlag an ${finalBidder} mit Gebot ${finalBid}.`);
+
+                    // Spieler informieren
+                    io.emit('biddingPhaseConcluded', {
+                        finalBidder: finalBidder,
+                        finalBid: finalBid,
+                        finalBidderId: finalBidderId
+                    });
+
+                    // UI-Update nur für den Spieler, der den Zuschlag erhalten hat
+                    io.to(currentPlayers[finalBidderId].socketId).emit('wbmAuctionWon', {
+                        bid: finalBid,
+                        category: wbmState.category
+                    });
+
+                } else {
+                    // Fall: Kein Gebot abgegeben
+                    io.emit('biddingPhaseConcluded', { finalBidder: null });
+                    console.log('[SERVER] WBM: Biet-Phase beendet. Kein Gebot abgegeben.');
+                }
+
+                /* Zustand für nächste Runde zurücksetzen, aber Kategorie beibehalten, bis Host neue startet
+                wbmState.currentBid = 0;
+                wbmState.currentBidderId = null;
+                wbmState.bids = {}; */
+            });
+
+            socket.on('submitWbmRoundScore', (data) => {
+                // Prüfen, ob wir im WBM-Modus sind und ein Gewinner feststeht
+                if (gameMode !== 'BIETEN_MEHR' || !wbmState.currentBidderId) {
+                    console.log('[SERVER] WBM: Fehler beim Eintragen der Punkte. Modus falsch oder kein Bieter.');
+                    return;
+                }
+
+                const { correctAnswers, correctPoints, incorrectPoints } = data;
+                const playerId = wbmState.currentBidderId;
+                const finalBid = wbmState.currentBid;
+                const username = wbmState.currentBidderUsername;
+                let pointsAwarded = 0;
+                let success = false;
+
+                // 1. Punkte berechnen (WBM Logik)
+                if (correctAnswers >= finalBid) {
+                    // Gebot erfüllt oder übertroffen: Punkte basierend auf dem Gebot * Host-Regel vergeben
+                    pointsAwarded = finalBid * correctPoints;
+                    success = true;
+                    console.log(`[SERVER] WBM: ${username} hat Gebot (${finalBid}) erfüllt. +${pointsAwarded} Punkte.`);
+                } else {
+                    // Gebot nicht erfüllt: Host-Regel für falsche Antwort (Strafe) anwenden
+                    pointsAwarded = incorrectPoints;
+                    success = false;
+                    console.log(`[SERVER] WBM: ${username} hat Gebot (${finalBid}) nicht erfüllt (${correctAnswers} korr.). ${pointsAwarded} Punkte.`);
+                }
+
+                // 2. Punkte im Spielstand aktualisieren
+                if (!gameScores[playerId]) {
+                    gameScores[playerId] = {
+                        username: username,
+                        points: 0,
+                        firstBuzzes: 0,
+                        correct: 0,
+                        wrong: 0,
+                    };
+                }
+                gameScores[playerId].points += pointsAwarded;
+
+                // 3. WBM-Statistiken aktualisieren (WBM wird als "Antwort" gezählt)
+                if (success) {
+                    gameScores[playerId].correct += 1;
+                } else {
+                    gameScores[playerId].wrong += 1;
+                }
+
+                // 4. Clients informieren (Scoreboard-Update)
+                io.emit('scoreUpdate', gameScores);
+
+                // 5. Host und Spieler über Rundenende informieren (Reset)
+                io.emit('wbmRoundConcluded', {
+                    success: success,
+                    winner: username,
+                    points: pointsAwarded,
+                    finalBid: finalBid,
+                    correctAnswers: correctAnswers,
+                    winnerId: playerId // Für die Spieler-UI
+                });
+
+                // 6. Globalen WBM-Zustand zurücksetzen
+                wbmState.category = null;
+                wbmState.bids = {};
+                wbmState.currentBid = 0;
+                wbmState.currentBidderId = null;
+                wbmState.currentBidderUsername = null;
+            });
+
 
 
             socket.on('requestSkip', () => {
@@ -443,6 +733,8 @@ module.exports = (io) => {
                 username: gameScores[id].username,
                 points: gameScores[id].points,
                 firstBuzzes: gameScores[id].firstBuzzes,
+                correctAnswers: stats.correct || 0,
+                wrongAnswers: stats.wrong || 0,
                 // Fügen Sie hier weitere Felder wie correct/wrong hinzu, falls Sie sie in der Game-Historie speichern wollen
             }));
 

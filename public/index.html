@@ -7,6 +7,7 @@
     <title>Quiz Buzzer - Spieler</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/index.css">
+    <link rel="icon" type="image/png" href="/pictures/favicon.png">
 </head>
 
 <body class="player-body">
@@ -47,10 +48,45 @@
 
             <div class="player-game-layout">
 
+                <div id="wbm-bidding-area" class="card buzzer-card" style="display: none;">
+                    <h2 class="card-title">Wer bietet mehr</h2>
 
+                    <div id="wbm-prep-timer" style="display: none;">
+                        <p>Kategorie: <strong id="wbm-category-display">Wird geladen...</strong></p>
+                        <p>Vorbereitungszeit läuft: <strong id="wbm-countdown-display"
+                                class="neon-text-highlight">05:00</strong></p>
+                        <p class="status-message">Schreibe so viele korrekte Antworten wie möglich auf!</p>
+                    </div>
 
-                <div class="buzzer-area-left">
-                    <div class="buzzer-container">
+                    <textarea id="wbm-tips" placeholder="Deine Gedanken..." class="input-field neon-border"
+                        style="height: 300px;"> </textarea>
+
+                    <div id="wbm-bid-controls" style="display: none;">
+                        <p>Höchstes Gebot: <strong id="current-high-bid-value">0</strong> (<span
+                                id="current-high-bidder">niemand</span>)</p>
+
+                        <div class="answer-submission-area" style="margin-top: 15px;">
+                            <input type="number" id="wbm-bid-input" min="1" placeholder="Dein Gebot (Anzahl Antworten)"
+                                class="input-field neon-border">
+                            <button onclick="submitBid()" class="button action small-button glow">Gebot senden</button>
+                        </div>
+
+                        <p id="wbm-bid-status" class="status-message"></p>
+                    </div>
+
+                    <div id="wbm-answer-info" style="display: none;">
+                        <p class="neon-text-highlight">Du hast den Zuschlag!</p>
+                        <p>Gebot: <strong id="wbm-final-bid"></strong>. Bitte nenne dem Host deine Antworten.</p>
+                    </div>
+                    <div id="wbm-revealed-answers-card" class="card score-card" style="margin-top: 20px;">
+                        <h2 class="card-title">Aufgedeckte Antworten</h2>
+                        <ul id="wbm-revealed-answers" class="styled-list">
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="classicBuzzerArea" class="buzzer-area-left">
+                    <div class="buzzer-container" id="buzzer-area">
                         <p id="question-progress" class="status-message"
                             style="text-align: center; font-size: 1.2em; margin-bottom: 15px;">
                             Frage <span id="current-question-display">--</span> von <span

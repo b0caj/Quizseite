@@ -1,5 +1,3 @@
-
-// === GLOBALE VARIABLEN ===
 let token = localStorage.getItem('token');
 let socket;
 let firstBuzzerId = null;
@@ -7,8 +5,10 @@ let currentQuiz = null;
 let currentQuestionIndex = 0;
 let countdownInterval = null;
 const TIMER_DURATION = 10; // 10 Sekunden
-
-// === ALLGEMEINE FUNKTIONEN ===
+let gameMode = 'BUZZER';
+let activeWbmAnswers = [];
+let wbmHostCountdownInterval = null;
+let wbmAnswersData = []; // Speichert die vollständigen Antworten und den Offenlegungsstatus
 
 function logout() {
     localStorage.removeItem('token');
@@ -44,7 +44,6 @@ function resetBuzzer() {
     }
     stopBuzzerTimer();
 }
-// NEUE FUNKTION: Sendet das Event zum Sperren des Buzzers
 function lockBuzzer() {
     if (socket) {
         socket.emit('lockBuzzer'); // Sendet das neue Event an den Server
@@ -99,18 +98,14 @@ function scorePlayer(type) {
         return;
     }
 
-    // ZUSÄTZLICHER KONSOLEN-CHECK: Prüfen, ob der Wert wirklich eine Zahl ist
     console.log(`[HOST-Frontend] Sende Typ: ${type}, Wert: ${pointsToSend}`);
 
-    // Sende den Zahlenwert und den Typ an den Server
     // Wir verwenden einen neuen Variablennamen ('pointsToSend'), um Scope-Probleme auszuschließen
     socket.emit('scorePlayer', { points: pointsToSend, type: type });
 
     // Buzzer für die nächste Frage freigeben
     document.getElementById('nextQuestionButton').disabled = false;
 }
-
-// === QUIZ MANAGEMENT FUNKTIONEN ===
 
 async function uploadQuiz() {
     const fileInput = document.getElementById('quizFileInput');
@@ -150,11 +145,14 @@ async function uploadQuiz() {
     }
 }
 
-async function loadQuizzes() {
+async function loadQuizzes(forWbm = false) {
     const selectEl = document.getElementById('quizSelect');
+    const wbmSelectEl = document.getElementById('wbmAnswerSelect');
     const statusEl = document.getElementById('upload-status');
+    const wbmStatusEl = document.getElementById('wbm-set-status');
 
     selectEl.innerHTML = '<option value="">-- Wähle ein Quiz --</option>';
+    if (wbmSelectEl) wbmSelectEl.innerHTML = '<option value="">-- Wähle Antworten-Set --</option>';
     document.getElementById('startButton').disabled = true;
 
     if (!token) {
@@ -171,24 +169,50 @@ async function loadQuizzes() {
         const quizzes = await response.json();
 
         if (response.ok) {
+
             quizzes.forEach(quiz => {
+                const quizId = quiz._id;
+                const title = quiz.title;
+                const date = new Date(quiz.createdAt).toLocaleDateString();
+
+                // 1. Befüllen des normalen Quiz-Dropdowns
                 const option = document.createElement('option');
-                option.value = quiz._id;
-                option.textContent = `${quiz.title} (${new Date(quiz.createdAt).toLocaleDateString()})`;
+                option.value = quizId;
+                option.textContent = `${title} (${date})`;
                 selectEl.appendChild(option);
+
+                // 2. Befüllen des WBM-Dropdowns 
+                // Prüft, ob wbmAnswers existiert UND mindestens ein Element enthält
+                if (quiz.wbmAnswers && Array.isArray(quiz.wbmAnswers) && quiz.wbmAnswers.length > 0) {
+                    const wbmOption = document.createElement('option');
+                    wbmOption.value = quizId;
+                    // Zeigt die Anzahl der Antworten an
+                    wbmOption.textContent = `Set: ${title} (${quiz.wbmAnswers.length} Antworten)`;
+                    wbmSelectEl.appendChild(wbmOption);
+
+                    // DIAGNOSE: Logge jeden erfolgreichen Eintrag
+                    console.log(`[WBM Set gefunden] Quiz-ID: ${quizId}, Titel: ${title}, Antworten: ${quiz.wbmAnswers.length}`);
+                } else {
+                    // DIAGNOSE: Logge, warum ein Quiz NICHT aufgenommen wurde
+                    console.log(`[WBM Set ignoriert] Quiz: ${title}. Antworten fehlen oder sind leer: ${quiz.wbmAnswers ? quiz.wbmAnswers.length : 'null'}`);
+                }
             });
+
             if (quizzes.length > 0) {
                 document.getElementById('startButton').disabled = false;
             }
+            if (forWbm) {
+                wbmStatusEl.textContent = 'Antworten-Sets geladen. (Prüfe Konsole für Details)';
+            }
+
         } else {
             statusEl.textContent = `❌ Fehler beim Laden: ${quizzes.message}`;
         }
     } catch (error) {
-        console.error('Ladefehler Quiz:', error);
+        console.error('Verbindungsfehler oder JSON-Parse-Fehler beim Laden:', error);
         statusEl.textContent = 'Verbindungsfehler beim Abrufen der Quiz-Liste.';
     }
 }
-
 async function startQuiz() {
     const quizId = document.getElementById('quizSelect').value;
 
@@ -262,7 +286,6 @@ function nextQuestion() {
     }
 }
 
-// === LOGIN & SOCKET FUNKTIONEN ===
 
 async function handleLogin() {
     const username = document.getElementById('username').value;
@@ -316,7 +339,165 @@ function connectSocket() {
         });
     });
 
-    // Listener für Buzzer-Ereignisse
+    // Listener, um die UI nach Bestätigung durch den Server zu aktualisieren
+    if (socket) {
+        socket.on('gameModeSet', (mode) => {
+            gameMode = mode;
+            const classicControls = document.getElementById('classicControlsArea');
+            const wbmControls = document.getElementById('wbmControlsArea');
+            const modeStatus = document.getElementById('mode-status');
+
+            if (mode === 'BIETEN_MEHR') {
+                if (classicControls) classicControls.style.display = 'none';
+                if (wbmControls) wbmControls.style.display = 'block';
+                if (modeStatus) modeStatus.textContent = 'Aktueller Modus: Wer bietet mehr';
+                console.log(`[HOST] UI auf Modus ${mode} umgeschaltet.`);
+            } else {
+                if (classicControls) classicControls.style.display = 'block';
+                if (wbmControls) wbmControls.style.display = 'none';
+                if (modeStatus) modeStatus.textContent = 'Aktueller Modus: Klassisches Buzzer-Quiz';
+                console.log(`[HOST] UI auf Modus ${mode} umgeschaltet.`);
+            }
+        });
+    }
+
+    socket.on('wbmRoundStarted', (data) => {
+        // WICHTIG: Prüfen, ob die Phase 'PREP' ist (Vorbereitungsphase)
+        if (data.phase === 'PREP') {
+            console.log('WBM Round Started Event empfangen. Starte Host-Timer.');
+            // Ruft die neue Funktion auf
+            startWbmHostCountdown(5 * 60);
+        } else if (data.phase === 'BIDDING') {
+            // Timer stoppen und Container ausblenden, wenn die Bietphase beginnt
+            if (wbmHostCountdownInterval) clearInterval(wbmHostCountdownInterval);
+            const container = document.getElementById('wbm-host-timer-container');
+            if (container) container.style.display = 'none';
+        }
+    });
+
+    // host.js: KORRIGIERTE VERSION DES LISTENERS
+    socket.on('wbmAnswersLoaded', (data) => {
+        console.log('WBM-Antworten vom Server empfangen.');
+
+        // 🔑 KORREKTUR: Das empfangene Objekt in 'data' umbenennen 
+        // und das Array unter dem Schlüssel 'answers' extrahieren.
+        const answersArray = data.answers;
+
+        // Sicherheitsprüfung hinzufügen: Ist es wirklich ein Array?
+        if (!Array.isArray(answersArray)) {
+            console.error("Fehler: Erwartetes Array 'answers' fehlt im empfangenen Datenobjekt.");
+            return;
+        }
+
+        // Die Daten lokal speichern und für das Rendering vorbereiten
+        wbmAnswersData = answersArray.map((answer, index) => ({
+            answer: answer,
+            revealed: false,
+            index: index
+        }));
+
+        // Die Anzeige im Host-Dashboard aktualisieren
+        renderWbmAnswers();
+    });
+
+
+    socket.on('wbmAnswerRevealed', ({ answer, index, allRevealed }) => {
+        // 1. Lokalen Zustand aktualisieren
+        const dataIndex = wbmAnswersData.findIndex(d => d.index === index);
+        if (dataIndex !== -1) {
+            wbmAnswersData[dataIndex].revealed = true;
+        }
+
+        // 2. UI-Element direkt aktualisieren
+        const answerDiv = document.getElementById(`wbm-answer-${index}`);
+        if (answerDiv) {
+            // Ersetzen Sie den Inhalt, um die Antwort und den 'Aufgedeckt'-Button anzuzeigen
+            answerDiv.innerHTML = `
+            <div class="answer-info"><span class="revealed-answer">${answer}</span></div>
+            <div class="answer-action"><button class="button success small-button" disabled>Aufgedeckt</button></div>
+        `;
+        }
+
+        // Statusmeldung für den Host
+        document.getElementById('wbm-answer-status').textContent = `Antwort #${index + 1} (${answer}) aufgedeckt!`;
+
+        if (allRevealed) {
+            document.getElementById('wbm-answer-status').textContent = 'Alle WBM Antworten wurden aufgedeckt!';
+        }
+    });
+
+    socket.on('newHighBid', (data) => {
+        const infoEl = document.getElementById('wbm-current-bid-info');
+        const bidsTbody = document.getElementById('wbm-bids-tbody');
+
+        // Host-Status aktualisieren
+        infoEl.innerHTML = `**Höchstes Gebot:** <span class="neon-text-highlight">${data.bid}</span> von **${data.bidder}**`;
+
+
+        // WICHTIG: Wir benötigen das `data.allBids` Objekt vom Server (siehe unten)
+        updateWbmBidTable(data.allBids);
+
+        console.log(`[HOST] Neues Höchstgebot: ${data.bidder} mit ${data.bid}.`);
+    });
+
+    // NEU: Listener für den Zuschlag (nach stopBiddingPhase)
+    socket.on('biddingPhaseConcluded', (data) => {
+        const infoEl = document.getElementById('wbm-current-bid-info');
+        const scoringArea = document.getElementById('wbmScoringArea');
+        const biddingTableWrapper = document.getElementById('wbmControlsArea').querySelector('.styled-table-wrapper');
+
+        if (data.finalBidder) {
+            infoEl.innerHTML = `**ZUSCHLAG ERTEILT!** Spieler **${data.finalBidder}** muss ${data.finalBid} Antworten nennen.`;
+
+            if (scoringArea && biddingTableWrapper) {
+                // Bidding Tabelle ausblenden
+                biddingTableWrapper.style.display = 'none';
+
+                // Scoring Area anzeigen und Daten setzen
+                document.getElementById('wbm-winner-display').textContent = data.finalBidder;
+                document.getElementById('wbm-bid-display').textContent = data.finalBid;
+                // Voreinstellung: Anzahl der korrekten Antworten auf das Gebot setzen
+                document.getElementById('wbmCorrectAnswers').value = data.finalBid;
+                scoringArea.style.display = 'block';
+                // NEU: Anzeige der richtigen WBM-Antworten
+                const answersHtml = activeWbmAnswers.map(ans => `<span class="wbm-answer-tag">${ans}</span>`).join('');
+                const answersDisplay = document.createElement('div');
+                answersDisplay.id = 'wbm-correct-answers-list';
+                answersDisplay.className = 'wbm-answers-list';
+                answersDisplay.innerHTML = '<h4>KORREKTE ANTWORTEN:</h4>' + answersHtml;
+            }
+
+        } else {
+            // Fall: Kein Gebot abgegeben
+            infoEl.textContent = 'Biet-Phase beendet. Kein Gebot abgegeben.';
+        }
+
+        console.log(`[HOST] Biet-Phase abgeschlossen. Zuschlag an ${data.finalBidder || 'niemand'}.`);
+    });
+
+    socket.on('wbmRoundConcluded', () => {
+        // UI zurücksetzen
+        const scoringArea = document.getElementById('wbmScoringArea');
+        const biddingTableWrapper = document.getElementById('wbmControlsArea').querySelector('.styled-table-wrapper');
+
+        if (scoringArea) scoringArea.style.display = 'none';
+
+        document.getElementById('wbmCategory').disabled = false;
+
+        if (biddingTableWrapper) biddingTableWrapper.style.display = 'block';
+
+        document.getElementById('wbm-current-bid-info').textContent = 'Kein Gebot aktiv. Neue Runde starten.';
+        document.getElementById('wbm-score-status').textContent = '';
+        document.querySelector('button[onclick="submitWbmScore()"]').disabled = false; // Button entsperren
+
+        console.log('[HOST] WBM Runde erfolgreich abgeschlossen. UI zurückgesetzt.');
+    });
+
+    socket.on('scoreUpdate', (scores) => {
+        console.log('[HOST] Punkte-Update erhalten:', scores);
+        updateScoreboard(scores);
+    });
+
     socket.on('buzzed', (data) => {
         document.getElementById('buzzer-status').textContent = `🚨 GEBUZZERT: ${data.username}`;
         document.getElementById('buzzer-winner').textContent = data.username;
@@ -331,36 +512,29 @@ function connectSocket() {
         document.getElementById('buzz-details').textContent = 'Warte auf den ersten Buzzer...';
         document.getElementById('answer-controls').style.display = 'none';
         stopBuzzerTimer();
-        //document.getElementById('answers-list').innerHTML = '';
     });
 
     socket.on('currentScoreUpdate', (scores) => {
         updateScoreboard(scores); // <-- DIESE ZUSAMMENFÜHRUNG FEHLT IM HOST-JS
     });
 
-    // NEU: Listener für Live-Tipp-Updates
     socket.on('typingUpdate', (data) => {
         const container = document.getElementById('live-typing-updates');
-        // Eindeutige ID für den Paragraphen jedes Spielers
         const elementId = `typing-${data.username}`;
         let playerP = document.getElementById(elementId);
 
-        // Wenn der Spieler das Feld leert, entferne seine Zeile
         if (data.text.trim() === '' && playerP) {
             playerP.remove();
             return;
         }
 
-        // Wenn Text vorhanden ist:
         if (data.text.trim() !== '') {
-            // Wenn für diesen Spieler noch keine Zeile existiert, erstelle sie
             if (!playerP) {
                 playerP = document.createElement('p');
                 playerP.id = elementId;
                 playerP.style.margin = '2px 0';
                 container.appendChild(playerP);
             }
-            // Aktualisiere den Text in der Zeile des Spielers
             playerP.textContent = `${data.username}: ${data.text}`;
         }
     });
@@ -368,10 +542,8 @@ function connectSocket() {
     socket.on('skipCountUpdate', (data) => {
         const skipCountEl = document.getElementById('skip-count');
 
-        // Setze den Text auf die empfangene Anzahl
         skipCountEl.textContent = data.count;
 
-        // Optional: Visualisierung anpassen, z.B. hervorheben, wenn > 0
         if (data.count > 0) {
             document.getElementById('skip-display').classList.add('active-glow');
         } else {
@@ -382,11 +554,6 @@ function connectSocket() {
     });
 
     socket.on('newAnswer', (data) => {
-        // Finde das Element, in dem du die neueste Antwort anzeigen möchtest.
-        // Ich gehe davon aus, dass du ein neues Element dafür erstellen musst, z.B. <p id="latest-answer-display"></p>
-
-        // Da du eine Liste hast ('answers-list'), löschen wir den Inhalt 
-        // und fügen nur die neue Antwort als *einziges* Element hinzu.
         const answersList = document.getElementById('answers-list');
         answersList.innerHTML = ''; // Vorherige Antworten entfernen
 
@@ -394,7 +561,6 @@ function connectSocket() {
         li.textContent = `[${data.username}]: ${data.answer}`;
         answersList.appendChild(li);
 
-        // Optional: Füge eine visuelle Markierung hinzu (z.B. einen blinkenden Rahmen).
         console.log(`[HOST] Letzte Antwort: ${data.username}: ${data.answer}`);
     });
 }
@@ -403,22 +569,16 @@ function playSound(file) {
     audio.play().catch(e => console.log("Audio konnte nicht abgespielt werden:", e));
 }
 
-// === SESSION WIEDERHERSTELLEN BEIM LADEN ===
 if (token) {
-    // 1. Formular ausblenden
     document.getElementById('login-form').style.display = 'none';
 
-    // 2. Host-Bereich einblenden
     document.getElementById('host-area').style.display = 'grid';
 
-    // 3. Verbindung herstellen
     connectSocket();
     loadQuizzes(); // Lade Quizzes direkt nach dem Wiederherstellen
 }
 
-// NEUE FUNKTION: Sendet den aktuellen Fragenfortschritt an alle Spieler
 function sendQuestionProgress() {
-    // Annahme: 'currentQuiz' und 'currentQuestionIndex' sind globale Variablen in host.js
     if (socket && socket.connected && currentQuiz) {
         // Senden Sie den Fortschritt. Wir addieren +1 zu 'currentQuestionIndex', 
         // da Indizes bei 0 beginnen, die Anzeige für den User aber bei 1.
@@ -435,21 +595,15 @@ function startBuzzerTimer() {
     const timerDisplay = document.getElementById('buzzer-timer');
     const timerContainer = document.getElementById('buzzer-timer-container');
 
-    // 1. UI vorbereiten
     if (timerContainer) {
         timerContainer.style.display = 'block';
     }
 
-    // Stoppt jeden vorherigen Timer
-    //stopBuzzerTimer();
-
-    // 2. Startet den Countdown
     countdownInterval = setInterval(() => {
         timeLeft -= 1;
         timerDisplay.textContent = timeLeft;
         timerDisplay.classList.remove('timer-flash'); // Entfernt den Flash für konstante Anzeige
 
-        // Visuelles Feedback bei geringer Zeit
         if (timeLeft <= 5) {
             timerDisplay.classList.add('timer-flash'); // Fügt Flash-Effekt hinzu
         }
@@ -462,8 +616,6 @@ function startBuzzerTimer() {
 
             // Optional: Senden Sie ein Event an den Server, dass der Timer abgelaufen ist (nur Host-Seite)
             if (typeof isHost !== 'undefined' && isHost) {
-                // Nur wenn es sich um den Host handelt, könnte ein Server-Event gesendet werden
-                // z.B. socket.emit('timesUp');
             }
         }
     }, 1000);
@@ -502,10 +654,6 @@ function endGame() {
 
         // 2. Host-UI nach dem Speichern zurücksetzen (visuelles Feedback)
         document.getElementById('buzzer-status').style.display = 'none';
-
-        // Da 'answer-controls' nur innerhalb von 'buzzer-status' oder
-        // im 'buzzed'-Listener eingeblendet wird, stellen wir sicher,
-        // dass der Host nicht in einem gelockten Zustand bleibt.
         const answerControls = document.getElementById('answer-controls');
         if (answerControls) {
             answerControls.style.display = 'none';
@@ -514,9 +662,7 @@ function endGame() {
     }
 }
 
-// NEUE FUNKTION: Sendet den aktuellen Fragenfortschritt an alle Spieler
 function sendQuestionProgress() {
-    // Stellen Sie sicher, dass currentQuiz geladen ist und der Socket verbunden ist
     if (socket && socket.connected && currentQuiz && currentQuiz.questions) {
         // currentQuestionIndex beginnt bei 0, die Anzeige beim User soll bei 1 beginnen.
         socket.emit('questionProgressUpdate', {
@@ -525,4 +671,218 @@ function sendQuestionProgress() {
         });
         console.log(`[HOST] Fragenfortschritt gesendet: Frage ${currentQuestionIndex + 1} von ${currentQuiz.questions.length}`);
     }
+}
+
+function setGameMode() {
+    const selector = document.getElementById('gameModeSelector');
+    if (socket && socket.connected && selector) {
+        const newMode = selector.value;
+        socket.emit('setGameMode', newMode);
+        console.log(`[HOST] Anfrage zum Wechsel in Modus: ${newMode}`);
+    } else {
+        console.error("Socket nicht verbunden oder Selector nicht gefunden.");
+    }
+}
+
+function startWbmRound() {
+    const wbmSelectEl = document.getElementById('wbmAnswerSelect');
+    const selectedQuizId = wbmSelectEl.value;
+    const categoryText = wbmSelectEl.options[wbmSelectEl.selectedIndex].textContent;
+
+    // Extrahieren des bereinigten Kategorienamens
+    const cleanCategory = categoryText.replace(/Set: | \(\d+ Antworten\)/g, '').trim();
+
+    const statusEl = document.getElementById('wbm-set-status');
+
+    if (!selectedQuizId) {
+        statusEl.textContent = '❌ Bitte wähle ein Antworten-Set aus.';
+        return;
+    }
+
+    if (socket && socket.connected) {
+        // 🔑 Sende NUR das korrekte Event an den Server
+        socket.emit('startWbmRound', {
+            quizId: selectedQuizId,
+            category: cleanCategory // Die Kategorie ist optional, hilft aber bei der Spieler-Info
+        });
+
+        // Feedback geben
+        document.getElementById('wbm-current-bid-info').textContent =
+            `Runde gestartet: "${cleanCategory}". Warte auf Bietphase...`;
+        console.log(`[HOST] WBM Runde mit ID ${selectedQuizId} gestartet. Warte auf Antworten vom Server...`);
+
+        // Sperre das Dropdown, um zu verhindern, dass der Host es mitten in der Runde ändert
+        wbmSelectEl.disabled = true;
+
+        // 🔥 Wichtig: Der Host muss nun auf 'wbmAnswersLoaded' vom Server warten.
+    } else {
+        console.error("Socket nicht verbunden.");
+    }
+}
+
+
+async function fetchWbmAnswersAndStartRound(quizId, category) {
+    const wbmStatusEl = document.getElementById('wbm-set-status');
+    wbmStatusEl.textContent = 'Lade Antworten-Set...';
+    try {
+
+        const response = await fetch(`/api/quiz/${quizId}`, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const quizData = await response.json();
+
+        if (response.ok && quizData.wbmAnswers) {
+            activeWbmAnswers = quizData.wbmAnswers; // Setze die globalen Antworten
+            wbmStatusEl.textContent = `Antworten-Set "${quizData.title}" geladen (${activeWbmAnswers.length} Antworten).`;
+
+        } else {
+            wbmStatusEl.textContent = `Fehler beim Laden der WBM-Antworten: ${quizData.message || 'Antworten nicht gefunden.'}`;
+            document.getElementById('wbmCategory').disabled = false; // Wieder freigeben
+        }
+    } catch (error) {
+        console.error('WBM Antworten Ladefehler:', error);
+        wbmStatusEl.textContent = 'Verbindungsfehler beim Laden der WBM-Antworten.';
+        document.getElementById('wbmCategory').disabled = false; // Wieder freigeben
+    }
+}
+
+function stopBiddingPhase() {
+    if (socket && socket.connected) {
+        // Event an den Server senden
+        socket.emit('stopBiddingPhase');
+        console.log("[HOST] Biet-Phase beenden angefordert.");
+    } else {
+        console.error("Socket nicht verbunden.");
+    }
+}
+
+function updateWbmBidTable(allBids) {
+    const tableBody = document.getElementById('wbm-bids-tbody');
+    if (!tableBody) return;
+
+    tableBody.innerHTML = '';
+
+    // Konvertiere das Gebots-Objekt in ein Array und sortiere absteigend nach Gebot
+    const sortedBids = Object.values(allBids).sort((a, b) => b.bid - a.bid);
+
+    sortedBids.forEach(bidData => {
+        const row = tableBody.insertRow();
+
+        // Hebe das höchste Gebot optisch hervor
+        if (bidData.bid === sortedBids[0].bid) {
+            row.classList.add('highlight-row');
+        }
+
+        row.innerHTML = `
+            <td>${bidData.username}</td>
+            <td class="neon-text-highlight">${bidData.bid}</td>
+        `;
+    });
+}
+// host.js: NEUE FUNKTION ZUM EINTRAGEN DER WBM-PUNKTE
+function submitWbmScore() {
+    const correctAnswers = parseInt(document.getElementById('wbmCorrectAnswers').value, 10);
+    // Wir senden die aktuellen Punktregeln mit, damit der Server sie zur Berechnung verwenden kann
+    const correctPoints = parseInt(document.getElementById('correctPoints').value, 10);
+    const incorrectPoints = parseInt(document.getElementById('incorrectPoints').value, 10);
+
+    const statusEl = document.getElementById('wbm-score-status');
+
+    if (socket && socket.connected && !isNaN(correctAnswers) && !isNaN(correctPoints) && !isNaN(incorrectPoints)) {
+        // Sende die Ergebnisse und die aktuellen Punktregeln an den Server
+        socket.emit('submitWbmRoundScore', {
+            correctAnswers: correctAnswers,
+            correctPoints: correctPoints,
+            incorrectPoints: incorrectPoints,
+        });
+        statusEl.textContent = "Punkte werden verarbeitet...";
+        // Button sperren, um Doppelklick zu verhindern
+        document.querySelector('button[onclick="submitWbmScore()"]').disabled = true;
+
+    } else {
+        statusEl.textContent = "Fehler: Ungültige Eingabe oder Socket nicht verbunden.";
+    }
+}
+function startWbmHostCountdown(durationInSeconds) {
+    let timer = durationInSeconds;
+    const container = document.getElementById('wbm-host-timer-container');
+    const display = document.getElementById('wbm-host-countdown-display');
+    const statusEl = document.getElementById('wbm-host-timer-status');
+
+    if (wbmHostCountdownInterval) clearInterval(wbmHostCountdownInterval);
+
+    container.style.display = 'block';
+    statusEl.textContent = 'Vorbereitungsphase aktiv.';
+    container.classList.remove('timer-finished'); // Optional: CSS-Klasse für abgelaufene Zeit
+
+    wbmHostCountdownInterval = setInterval(() => {
+        let minutes = parseInt(timer / 60, 10);
+        let seconds = parseInt(timer % 60, 10);
+
+        minutes = minutes < 10 ? "0" + minutes : minutes;
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        display.textContent = minutes + ":" + seconds;
+
+        if (--timer < 0) {
+            clearInterval(wbmHostCountdownInterval);
+            display.textContent = "00:00";
+            statusEl.textContent = "Zeit abgelaufen! Bietphase beginnt...";
+            container.classList.add('timer-finished');
+            // Der Server sendet 'wbmRoundStarted' mit phase: 'BIDDING',
+            // was dann den Container wieder ausblenden sollte, falls gewünscht.
+        }
+    }, 1000);
+}
+function revealWbmAnswer(answerIndex) {
+    if (socket && socket.connected) {
+        socket.emit('revealWbmAnswer', { answerIndex });
+        document.getElementById('wbm-answer-status').textContent = `Sende Befehl zum Aufdecken von Antwort #${answerIndex + 1}...`;
+    } else {
+        document.getElementById('wbm-answer-status').textContent = 'Fehler: Socket nicht verbunden.';
+    }
+}
+
+// Rendert die Antworten im Host-UI
+function renderWbmAnswers() {
+    const listEl = document.getElementById('wbm-answers-list');
+    if (!listEl) return;
+
+    listEl.innerHTML = '';
+
+    if (wbmAnswersData.length === 0) {
+        document.getElementById('wbm-answer-status').textContent = 'Keine WBM Antworten für diese Kategorie geladen.';
+        return;
+    }
+    document.getElementById('wbm-answer-status').textContent = '';
+
+    wbmAnswersData.forEach((data, index) => {
+        const answerDiv = document.createElement('div');
+        answerDiv.className = 'wbm-answer-item';
+
+        let content = '';
+        let buttonHtml = '';
+
+        // 🔑 NEUE LOGIK: Zeige die Antwort IMMER dem Host an
+        content = `<span class="host-answer-revealed">${data.answer}</span>`;
+
+        if (data.revealed) {
+            // Wenn die Antwort bereits für die Spieler aufgedeckt wurde, zeige den Status
+            buttonHtml = `<button class="button success small-button" disabled>Aufgedeckt</button>`;
+        } else {
+            // Der Host muss weiterhin einen Button haben, um sie FÜR DIE SPIELER aufzudecken.
+            // Der Text "Aufdecken" ändert sich, da die Antwort für den Host sichtbar ist.
+            buttonHtml = `<button onclick="revealWbmAnswer(${data.index})" class="button action small-button glow">Für Spieler aufdecken</button>`;
+        }
+
+        answerDiv.innerHTML = `
+        <div class="answer-info">Antwort #${index + 1}: ${content}</div>
+        <div class="answer-action">${buttonHtml}</div>
+    `;
+
+        answerDiv.id = `wbm-answer-${data.index}`; // Wichtig für das spätere Update durch wbmAnswerRevealed
+        listEl.appendChild(answerDiv);
+    });
 }

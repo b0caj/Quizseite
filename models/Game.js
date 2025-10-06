@@ -5,7 +5,7 @@ const GameSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-    
+
     // Array speichert die detaillierten Ergebnisse der Teilnehmer
     playersResults: [{
         // Referenz zum Spieler-Modell, um den Spieler zu identifizieren
@@ -22,8 +22,17 @@ const GameSchema = new mongoose.Schema({
             type: Number,
             default: 0,
         },
+        // NEU: Zähler für richtige und falsche Antworten in DIESEM Spiel
+        correctAnswers: {
+            type: Number,
+            default: 0,
+        },
+        wrongAnswers: {
+            type: Number,
+            default: 0,
+        },
     }],
-    
+
     // Ergebnis des gesamten Spiels
     winnerId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -31,5 +40,6 @@ const GameSchema = new mongoose.Schema({
         required: false, // Kann am Anfang null sein
     },
 });
+
 
 module.exports = mongoose.model('Game', GameSchema);
