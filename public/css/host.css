@@ -1,11 +1,12 @@
 /* HOST-DASHBOARD LAYOUT (host.html) */
 .host-container.three-column-grid {
     display: grid;
-    grid-template-columns: 1.5fr 3fr 1.5fr; /* Linke und rechte Spalte schmaler */
+    grid-template-columns: 1.5fr 3fr 1.5fr;
+    /* Linke und rechte Spalte schmaler */
     gap: var(--layout-gap);
     padding: var(--layout-gap);
-    min-height: calc(100vh - 80px); 
-    align-items: start; 
+    min-height: calc(100vh - 80px);
+    align-items: start;
     height: 100%;
 }
 
@@ -14,26 +15,30 @@
     flex-direction: column;
     gap: var(--layout-gap);
     height: 100%;
-    position: sticky; /* Rechte Spalte klebt oben */
+    position: sticky;
+    /* Rechte Spalte klebt oben */
     top: var(--layout-gap);
 }
 
 /* LOGS & AKTIVITÄT */
 .logs-card {
-    border: 1px solid var(--secondary-accent); /* Logs-Spalte mit Neon-Akzent */
+    border: 1px solid var(--secondary-accent);
+    /* Logs-Spalte mit Neon-Akzent */
     box-shadow: 0 0 15px rgba(39, 255, 178, 0.3);
 }
 
 .log-area {
-    background-color: #050505; 
-    color: var(--secondary-accent); /* Logs in Neon-Akzentfarbe */
+    background-color: #050505;
+    color: var(--secondary-accent);
+    /* Logs in Neon-Akzentfarbe */
     border: 1px solid #1a1a1a;
     padding: 15px;
     overflow-y: auto;
     border-radius: 8px;
     font-family: 'Consolas', 'Monospace';
     font-size: 0.9em;
-    height: 120px; /* Etwas kleiner */
+    height: 120px;
+    /* Etwas kleiner */
     box-shadow: var(--shadow-inset);
 }
 
@@ -42,7 +47,8 @@
 }
 
 #skip-display {
-    background-color: #201026; /* Dunkler Hintergrund für Skip-Info */
+    background-color: #201026;
+    /* Dunkler Hintergrund für Skip-Info */
     border: 1px solid var(--primary-color);
     margin-bottom: var(--layout-gap);
     text-align: center;
@@ -51,15 +57,17 @@
 
 #skip-count {
     font-size: 3em;
-    color: var(--danger-color); /* Danger-Farbe für Aufmerksamkeit */
+    color: var(--danger-color);
+    /* Danger-Farbe für Aufmerksamkeit */
     text-shadow: 0 0 8px rgba(255, 82, 82, 0.8);
 }
 
 /* FRAGEN-DISPLAY (host.html) */
 .question-display-area {
     background-color: var(--card-background);
-    border: 3px solid var(--primary-color); /* Dickerer Rahmen für zentrale Steuerung */
-    padding: 40px; 
+    border: 3px solid var(--primary-color);
+    /* Dickerer Rahmen für zentrale Steuerung */
+    padding: 40px;
     border-radius: var(--border-radius);
     text-align: center;
     box-shadow: var(--primary-glow);
@@ -72,7 +80,7 @@
 }
 
 .question-text.big-text {
-    font-size: 2.2em; 
+    font-size: 2.2em;
     font-weight: 900;
     color: var(--text-color);
     margin: 20px 0;
@@ -88,7 +96,8 @@
 }
 
 .answer-text {
-    color: var(--info-color); /* Antwort in Info-Farbe */
+    color: var(--info-color);
+    /* Antwort in Info-Farbe */
     font-weight: 700;
     font-size: 1.3em;
     margin-top: 0;
@@ -116,7 +125,8 @@
     background-color: #121212;
     padding: 25px;
     border-radius: var(--border-radius);
-    border: 2px solid var(--info-color); /* WBM-Bereich in Info-Farbe */
+    border: 2px solid var(--info-color);
+    /* WBM-Bereich in Info-Farbe */
     box-shadow: 0 0 15px rgba(51, 196, 255, 0.6);
     /*grid-column: 1 / span 2; /* WBM nimmt volle Breite in der Mitte */
     display: grid;
@@ -138,13 +148,116 @@
 }
 
 #wbmScoringArea {
-    grid-column: 1 / span 2; /* Scoring in eigener Zeile */
+    grid-column: 1 / span 2;
+    /* Scoring in eigener Zeile */
+}
+
+#wbm-answer-controls {
+    /* Hebt den Container hervor */
+    background-color: #0d0115;
+    /* Ein dunklerer, leicht violetter Ton */
+    border: 3px solid var(--primary-color);
+    /* Dickerer Rahmen mit Primärfarbe */
+    box-shadow: 0 0 20px rgba(103, 58, 183, 0.7);
+    /* Ein lila/blauer Glow */
+    padding: 20px;
+}
+
+#wbm-answer-controls .card-title {
+    /* Stärkerer Titel-Stil */
+    color: var(--primary-color);
+    text-shadow: 0 0 10px var(--primary-color), 0 0 20px rgba(103, 58, 183, 0.5);
+    font-size: 1.6em;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+#wbm-answers-list {
+    /* Ein klarer, abgetrennter Bereich für die dynamisch geladenen Antworten */
+    min-height: 100px;
+    max-height: 300px;
+    /* Begrenzung für Scroll-Funktionalität */
+    overflow-y: auto;
+    background-color: #000000;
+    border: 1px solid var(--primary-color);
+    padding: 10px;
+    border-radius: 5px;
+}
+
+/* Stil-Vorschlag für dynamisch generierte Antwort-Elemente (falls sie z.B. <div> oder <button> sind) */
+/* **Wichtig:** Passe diesen Selektor an, wenn du weißt, welche Elemente tatsächlich gerendert werden (z.B. #wbm-answers-list button) */
+#wbm-answers-list>div,
+#wbm-answers-list>button,
+#wbm-answers-list>p {
+    background-color: #1a0a2e;
+    /* Hintergrundfarbe für einzelne Antwort */
+    color: var(--text-color);
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    border-left: 5px solid var(--secondary-accent);
+    /* Farbiger Akzentstreifen links */
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+#wbm-answers-list>div:hover,
+#wbm-answers-list>button:hover {
+    background-color: #2c1a40;
+    /* Heller bei Hover */
+    box-shadow: 0 0 5px rgba(103, 58, 183, 0.4);
+}
+
+.wbm-answer-item {
+    display: flex;
+    /* Aktiviere Flexbox für die Aufteilung */
+    justify-content: space-between;
+    /* Verteile Inhalt und Button auf die Enden */
+    align-items: center;
+    /* Zentriere vertikal */
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    background-color: #1a0a2e;
+    border-left: 5px solid var(--secondary-accent);
+    border-radius: 4px;
+    box-shadow: 0 0 5px rgba(39, 255, 178, 0.2);
+    /* Kleiner Neon-Schimmer */
+    transition: background-color 0.2s;
+}
+
+.wbm-answer-item:hover {
+    background-color: #2c1a40;
+}
+
+.wbm-answer-item .answer-info {
+    font-size: 1.1em;
+    font-weight: 500;
+    color: var(--text-color);
+    flex-grow: 1;
+    /* Lässt den Text den restlichen Platz einnehmen */
+    padding-right: 15px;
+    /* Abstand zum Button */
+}
+
+/* Stil für die tatsächlich aufgedeckte Antwort (die der Host sieht) */
+.wbm-answer-item .host-answer-revealed {
+    font-weight: 700;
+    color: var(--info-color);
+    /* Hebt die Antwort selbst hervor */
+    text-shadow: 0 0 5px rgba(51, 196, 255, 0.4);
+}
+
+.wbm-answer-item .answer-action {
+    flex-shrink: 0;
+    /* Verhindert, dass der Button schrumpft */
 }
 
 /* Responsive Anpassungen (Host) */
 @media (max-width: 1400px) {
     .host-container.three-column-grid {
-        grid-template-columns: 2fr 3.5fr 2fr; 
+        grid-template-columns: 2fr 3.5fr 2fr;
     }
 }
 
@@ -153,23 +266,28 @@
         grid-template-columns: 1fr 1fr;
         gap: 20px;
     }
+
     .right-column-container {
         grid-column: 1 / span 2;
         order: 3;
         position: static;
     }
+
     .logs-card {
         order: 2;
         height: fit-content;
     }
+
     .central-control-card {
-        grid-column: 1 / span 2; 
+        grid-column: 1 / span 2;
         order: 1;
     }
+
     #wbmControlsArea {
         grid-template-columns: 1fr;
         grid-column: 1 / span 2;
     }
+
     #wbmScoringArea {
         grid-column: 1 / span 1;
     }
@@ -180,12 +298,15 @@
         grid-template-columns: 1fr;
         padding: 15px;
     }
+
     .central-control-card {
         grid-column: 1;
     }
+
     .logs-card {
         grid-column: 1;
     }
+
     .right-column-container {
         grid-column: 1;
     }
