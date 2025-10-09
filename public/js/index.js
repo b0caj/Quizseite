@@ -3,6 +3,7 @@ let socket;
 let countdownInterval = null;
 const TIMER_DURATION = 10; // 10 Sekunden
 let wbmCountdownInterval = null;
+let revealedWbmAnswers = [];
 
 async function handleLogin() {
     const username = document.getElementById('username').value;
@@ -177,13 +178,12 @@ function connectSocket() {
             document.getElementById('wbm-bid-status').textContent = 'Bietphase aktiv!';
         }
     });
-    
-    socket.on('wbmAnswerRevealed', ({ answer, index, allRevealed }) => {
-        // Zeigt die Antwort an
-        updateWbmRevealedAnswers(answer, index);
 
-        // Optional: Eine allgemeine Statusmeldung
-        document.getElementById('wbm-bid-status').textContent = `Eine neue Antwort wurde aufgedeckt!`;
+    socket.on('wbmAnswerRevealed', (data) => {
+        // data sollte jetzt { answer: string, originalIndex: number } sein
+        if (data.answer && typeof data.originalIndex === 'number') {
+            updateWbmRevealedAnswers(data.answer, data.originalIndex);
+        }
     });
 
     // NEU: Listener für ein neues Höchstgebot
@@ -604,15 +604,36 @@ function startWbmCountdown(durationInSeconds) {
         }
     }, 1000);
 }
-function updateWbmRevealedAnswers(answer, index) {
+function updateWbmRevealedAnswers(answer, originalIndex) {
     const container = document.getElementById('wbm-revealed-answers');
     if (!container) return;
 
-    const answerEl = document.createElement('li');
-    answerEl.className = 'wbm-revealed-answer-item neon-text';
-    // Fügen Sie die Nummerierung hinzu, damit der Spieler weiß, wie viele bereits aufgedeckt wurden.
-    answerEl.textContent = `Antwort ${index + 1}: ${answer}`;
+    // 1. Fügen Sie die neue Antwort der Liste hinzu (überprüfen Sie, ob sie bereits da ist, um Duplikate zu vermeiden)
+    const existing = revealedWbmAnswers.find(a => a.originalIndex === originalIndex);
+    if (!existing) {
+        // Hinzufügen der Antwort mit dem ursprünglichen Index
+        revealedWbmAnswers.push({ answer, originalIndex });
+    } else if (answer !== existing.answer) {
+        // Optional: Antwort aktualisieren, falls sich der Text geändert hat, aber der Index gleich ist
+        existing.answer = answer;
+    } else {
+        // Antwort ist bereits bekannt und identisch, nichts tun
+        return;
+    }
 
-    // Fügt die neue Antwort zur Liste hinzu
-    container.appendChild(answerEl);
+    // 2. Sortieren Sie die Antworten nach dem ursprünglichen Index (aufsteigend)
+    revealedWbmAnswers.sort((a, b) => a.originalIndex - b.originalIndex);
+
+    // 3. Den Container leeren und die sortierte Liste neu rendern
+    container.innerHTML = '';
+
+    revealedWbmAnswers.forEach((data) => {
+        const answerEl = document.createElement('li');
+        answerEl.className = 'wbm-revealed-answer-item neon-text';
+
+        // Die Nummerierung basiert jetzt auf dem Original-Index (0-basiert + 1)
+        answerEl.textContent = `Antwort #${data.originalIndex + 1}: ${data.answer}`;
+
+        container.appendChild(answerEl);
+    });
 }

@@ -243,11 +243,12 @@ module.exports = (io) => {
                 // Zustand aktualisieren
                 wbmState.revealedWbmAnswers.push(answer);
 
+                // Antwort aufgedeckt
+                const answerToReveal = answer;
                 // Sende die aufgedeckte Antwort an ALLE (Host und Spieler)
                 io.emit('wbmAnswerRevealed', {
-                    answer: answer,
-                    index: answerIndex, // Senden Sie den Index zur Aktualisierung des Host-UIs
-                    allRevealed: wbmState.revealedWbmAnswers.length === wbmState.wbmAnswers.length
+                    answer: answerToReveal,
+                    originalIndex: answerIndex // <-- Hier senden wir den Index mit
                 });
 
                 console.log(`✅ WBM Antwort ${answerIndex} ('${answer}') aufgedeckt.`);
