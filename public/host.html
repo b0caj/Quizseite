@@ -64,6 +64,9 @@
                 <button onclick="startWbmRound()" class="button success glow full-width">
                     Runde Starten (5 Min. Vorbereitung)
                 </button>
+                <button onclick="startNewWbmRound()" class="button primary danger full-width glow">
+                    NEUE WBM-RUNDE STARTEN ♻️
+                </button>
                 <div id="wbm-host-timer-container" class="card status-card timer-card"
                     style="display: none; margin-bottom: 20px;">
                     <h3 class="card-title">WBM Vorbereitungs-Timer</h3>
@@ -72,7 +75,7 @@
                     </p>
                 </div>
             </div>
-            
+
             <div class="controls-group">
                 <h3>WBM - Bietphase 🔨</h3>
                 <p id="wbm-current-bid-info">Kein Gebot aktiv.</p>
@@ -237,7 +240,8 @@
                             </select>
                             <button onclick="setGameMode()" class="button primary glow full-width">Modus
                                 Umschalten</button>
-                            <p id="mode-status" class="status-message neon-text-highlight">Aktueller Modus: Klassisches Buzzer-Quiz</p>
+                            <p id="mode-status" class="status-message neon-text-highlight">Aktueller Modus: Klassisches
+                                Buzzer-Quiz</p>
                         </div>
 
                         <hr class="neon-divider">

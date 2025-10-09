@@ -209,6 +209,31 @@ module.exports = (io) => {
                 }
             });
 
+            socket.on('startNewWbmRound', () => {
+                // Nur der Host darf diesen Befehl senden. (Stellen Sie sicher, dass dies durch Authentifizierung geschützt ist,
+                // oder verlassen Sie sich auf die Client-Logik, die nur dem Host den Button zeigt.)
+
+                // 1. Den WBM-Zustand zurücksetzen
+                wbmState = {
+                    category: null,
+                    bids: {},
+                    currentBidderId: null,
+                    currentBid: 0,
+                    maxErrors: 3,
+                    wbmAnswers: [],
+                    revealedWbmAnswers: []
+                };
+
+                console.log(`✅ WBM-Zustand zurückgesetzt. Neue Runde bereit.`);
+
+                // 2. Spieler über den Neustart der Runde informieren
+                // Wir senden ein leeres Array für die Antworten und setzen den Zustand zurück.
+                io.emit('wbmRoundReset');
+
+                // 3. Optional: Den Spielmodus zurücksetzen, falls er auf 'WBM_RUNNING' war
+                // gameMode = 'BUZZER'; // Nur falls der Modus global gesteuert wird
+            });
+
             socket.on('wbmRoundStarted', (data) => {
                 // WICHTIG: Prüfen, ob die Phase 'PREP' ist (Vorbereitungsphase)
                 if (data.phase === 'PREP') {

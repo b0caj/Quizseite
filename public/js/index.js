@@ -160,6 +160,38 @@ function connectSocket() {
         if (wbmCountdownInterval) clearInterval(wbmCountdownInterval);
     });
 
+    socket.on('wbmRoundReset', () => {
+        // Leere die globale Liste der aufgedeckten Antworten
+        revealedWbmAnswers = [];
+
+        if (wbmCountdownInterval) {
+            clearInterval(wbmCountdownInterval);
+            wbmCountdownInterval = null; // Setze die Variable zurück
+        }
+
+        // 🔑 NEU: 2. Die Timer-Anzeige zurücksetzen
+        const display = document.getElementById('wbm-countdown-display');
+        if (display) {
+            display.textContent = "00:00";
+        }
+
+        // Leere den Container auf der index.html
+        const container = document.getElementById('wbm-revealed-answers');
+        if (container) {
+            container.innerHTML = '';
+        }
+
+        // Setze alle WBM-spezifischen Anzeigen auf der Spielerseite zurück
+        document.getElementById('wbm-category-display').textContent = 'Warten auf Host...';
+        document.getElementById('wbm-error-counter').textContent = 'Fehler: 0/3';
+        document.getElementById('wbm-bid-info').textContent = 'Warten auf Kategorie-Start.';
+
+        // Blende alle unnötigen Elemente aus oder setze sie zurück (z.B. Gebots-Eingabe)
+        // ...
+
+        console.log('WBM-Rundenzustand und Timer zurückgesetzt.');
+    });
+
     // NEU: Listener für den Start einer WBM-Runde
     socket.on('wbmRoundStarted', (data) => {
         document.getElementById('wbm-category-display').textContent = data.category;

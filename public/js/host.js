@@ -686,6 +686,7 @@ function setGameMode() {
 
 function startWbmRound() {
     const wbmSelectEl = document.getElementById('wbmAnswerSelect');
+    const wbmCategorySelect = document.getElementById('wbm-category-select');
     const selectedQuizId = wbmSelectEl.value;
     const categoryText = wbmSelectEl.options[wbmSelectEl.selectedIndex].textContent;
 
@@ -712,7 +713,7 @@ function startWbmRound() {
         console.log(`[HOST] WBM Runde mit ID ${selectedQuizId} gestartet. Warte auf Antworten vom Server...`);
 
         // Sperre das Dropdown, um zu verhindern, dass der Host es mitten in der Runde ändert
-        wbmSelectEl.disabled = true;
+        wbmCategorySelect.disabled = true;
 
         // 🔥 Wichtig: Der Host muss nun auf 'wbmAnswersLoaded' vom Server warten.
     } else {
@@ -885,4 +886,54 @@ function renderWbmAnswers() {
         answerDiv.id = `wbm-answer-${data.index}`; // Wichtig für das spätere Update durch wbmAnswerRevealed
         listEl.appendChild(answerDiv);
     });
+}
+
+function startNewWbmRound() {
+    if (!socket) {
+        console.error('Socket-Verbindung nicht verfügbar.');
+        return;
+    }
+
+    // Bestätigung vom Host einholen, da dies den Zustand löscht
+    if (!confirm('Sind Sie sicher, dass Sie eine NEUE WBM-RUNDE starten möchten? Alle aktuellen Gebote und aufgedeckten Antworten werden gelöscht.')) {
+        return;
+    }
+
+    // 1. Event an den Server senden
+    socket.emit('startNewWbmRound');
+
+    // 2. Host-UI zurücksetzen
+
+    // a) Leere die Host-Daten der aufgedeckten Antworten
+    wbmAnswersData = [];
+
+    if (wbmHostCountdownInterval) {
+        clearInterval(wbmHostCountdownInterval);
+        wbmHostCountdownInterval = null; // Setzt die Variable zurück
+    }
+
+    const hostTimerDisplay = document.getElementById('wbm-host-countdown-display');
+    if (hostTimerDisplay) {
+        hostTimerDisplay.textContent = "00:00";
+    }
+
+    // b) Entferne die angezeigten Antworten aus dem Host-HTML
+    const answersContainer = document.getElementById('wbm-answers-container');
+    if (answersContainer) {
+        answersContainer.innerHTML = '';
+    }
+
+    // c) Setze das Kategoriefeld/Dropdown zurück
+    const wbmCategorySelect = document.getElementById('wbm-category-select');
+    if (wbmCategorySelect) {
+        wbmCategorySelect.value = ''; // Setzt den ausgewählten Wert zurück
+        // 🔑 WICHTIG: Die Sperrung muss aufgehoben werden
+        wbmCategorySelect.disabled = false; // <-- Diese Zeile macht das Dropdown wieder frei
+    }
+
+    // d) Setze den Zustand auf der UI zurück
+    document.getElementById('wbm-answer-status').textContent = 'Bereit für neue Runde. Wählen Sie eine Kategorie.';
+    document.getElementById('current-bidder-info').textContent = 'Kein Bieter aktiv.';
+
+    console.log('Neue WBM-Runde vom Host gestartet.');
 }
